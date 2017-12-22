@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import re
 
 import scrapy
 from bs4 import BeautifulSoup
@@ -12,8 +13,8 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
 
 from apache_crawler.items import ApacheCrawlerItem
+from orm.setup import SessionWrapper
 
-import re
 
 class ApacheSpider(CrawlSpider):
     name = 'apache_crawler'
@@ -26,6 +27,8 @@ class ApacheSpider(CrawlSpider):
 
     def __init__(self, browser='PhantomJS', *a, **kw):
         super(ApacheSpider, self).__init__(*a, **kw)
+        self.log = logging.getLogger(__name__)
+
         if browser == "PhantomJS":
             self.driver = webdriver.PhantomJS()
         elif browser == "Chrome":
@@ -33,7 +36,9 @@ class ApacheSpider(CrawlSpider):
             options.add_argument('--ignore-certificate-errors')
             options.add_argument("--test-type")
             self.driver = webdriver.Chrome(chrome_options=options)
-        self.log = logging.getLogger(__name__)
+
+        SessionWrapper.load_config('apache_crawler/cfg/setup.yml')
+        SessionWrapper.new(init=True)
 
     def parse_project_list(self, response):
         self.driver.get(response.url)
@@ -75,7 +80,7 @@ class ApacheSpider(CrawlSpider):
             self.driver.get(response.url)
             WebDriverWait(self.driver, 60).until(
                 expected_conditions.visibility_of_element_located((By.XPATH, '//div[@id="contents"]//ul/li/b')))
-            #WebDriverWait(self.driver, 120).until(lambda d: d.execute_script('return document.readyState') == 'complete')
+            # WebDriverWait(self.driver, 120).until(lambda d: d.execute_script('return document.readyState') == 'complete')
 
             bs = BeautifulSoup(self.driver.page_source, 'lxml')
             i = ApacheCrawlerItem()
@@ -99,8 +104,8 @@ class ApacheSpider(CrawlSpider):
             self.log.error('Project %s is missing description information, skipped' % response.url.split('?')[1])
         except (TimeoutException, WebDriverException):
             self.log.error('Timeout error waiting for resolution of {0}'.format(response.url))
-            self.driver.save_screenshot('%-screenshot.png' % response.url.split('?')[1])
-        except NoSuchElementException:
+            self.driver.save_screenshot('screenshot/%s.png' % response.url.split('?')[1])
+        except (NoSuchElementException, AttributeError):
             self.log.error('XPath error parsing url %s' % response.url)
 
     def _parse_commitee(self, committee_url, item):

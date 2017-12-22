@@ -9,10 +9,11 @@ import importlib
 import logging
 import traceback
 
+from scrapy.exceptions import DropItem
 from sqlalchemy.orm import exc
 
-from apache_crawler.orm.setup import SessionWrapper
-from apache_crawler.orm.tables import *
+from orm.setup import SessionWrapper
+from orm.apache_tables import *
 
 
 class ApacheCrawlerPipeline(object):
@@ -26,6 +27,8 @@ class ApacheCrawlerPipeline(object):
             pass
         item['dev_ml_url'] = 'http://mail-archives.apache.org/mod_mbox/%s-dev/' % item['project']
         item['user_ml_url'] = 'http://mail-archives.apache.org/mod_mbox/%s-user/' % item['project']
+        if item['project'] == 'undefined':
+            raise DropItem('Dropping invalid an item with missing project name (%s)' % item['url'])
         return item
 
 
@@ -39,34 +42,40 @@ class DatabaseStoragePipeline(object):
 
         try:
             pmc_name, pmc_login = item['pmc_chair'].split('#')
-            pmc_id = self.add_developer(session, pmc_login, pmc_name)
-            project_id = self.add_project(session, item, pmc_id)
+            self.add_developer(session, pmc_login, pmc_name)
+            self.add_project(session, item, pmc_login)
+            project_name = item['project']
 
             committers = item['committers'].split(',')
             for c in committers:
                 c_name, c_login = c.split('#')
-                c_id = self.add_developer(session, c_login, c_name)
-                self.link_dev_project(session, project_id, c_id, 'apache_crawler.orm.tables', 'ProjectCommitter')
+                self.add_developer(session, c_login, c_name)
+                self.link_dev_project(session, project_name, c_login, 'apache_crawler.orm.tables', 'ProjectCommitter')
 
             members = item['pmc_members'].split(',')
             for m in members:
                 m_name, m_login = m.split('#')
-                m_id = self.add_developer(session, m_login, m_name)
-                self.link_dev_project(session, project_id, m_id, 'apache_crawler.orm.tables', 'PmcMember')
-        except Exception:
-            self.log.error('Consistency error storing data in the database')
+                self.add_developer(session, m_login, m_name)
+                self.link_dev_project(session, project_name, m_login, 'apache_crawler.orm.tables', 'PmcMember')
+        except KeyError:
+            self.log.error('Structural error found prepping to store item %s' % item['project'])
             traceback.print_exc()
+            raise DropItem('Dropping invalid an item with invalid structure %s' % item['project'])
+        except Exception:
+            self.log.error('Consistency error storing data for %s in the database' % item['project'])
+            traceback.print_exc()
+            raise DropItem('Dropping invalid an item with invalid structure %s' % item['project'])
         return item
 
-    def add_project(self, session, item, pmc_id):
+    def add_project(self, session, item, pmc_login):
         try:
-            project_id = session.query(ApacheProject.id).filter_by(name=item['project']).one().id
+            session.query(ApacheProject).filter_by(name=item['project']).one()
         except exc.NoResultFound:
             project = ApacheProject(name=item['project'],
                                     status=item['status'],
                                     category=item['category'],
                                     language=item['language'],
-                                    pmc_chair=pmc_id,
+                                    pmc_chair=pmc_login,
                                     url=item['url'],
                                     repository_url=item['repository_url'],
                                     repository_type=item['repository_type'],
@@ -76,29 +85,28 @@ class DatabaseStoragePipeline(object):
                                     )
             session.add(project)
             session.commit()
-            project_id = session.query(ApacheProject.id).filter_by(name=item['project']).one().id
-        return project_id
 
     def add_developer(self, session, login, name):
         name = name.strip()
         login = login.strip()
 
         try:
-            dev_id = session.query(ApacheDeveloper.id).filter_by(name=name, login=login).one().id
+            d = session.query(ApacheDeveloper).filter_by(login=login).one()
+            if d.name == 'undefined' and name != 'undefined':
+                self.log.debug('Updating name for developer %s' % login)
+                d.name = name
+                session.commit()
         except exc.NoResultFound:
             developer = ApacheDeveloper(name=name, login=login)
             session.add(developer)
             session.commit()
-            dev_id = session.query(ApacheDeveloper.id).filter_by(name=name, login=login).one().id
-        return dev_id
 
-    def link_dev_project(self, session, project_id, dev_id, module, class_name):
-        DeveloperClass = getattr(importlib.import_module(module), class_name)
+    def link_dev_project(self, session, project_name, dev_login, module, class_name):
+        Class = getattr(importlib.import_module(module), class_name)
 
         try:
-            session.query(DeveloperClass).filter_by(project_id=project_id, developer_id=dev_id).one()
+            session.query(Class).filter_by(project_name=project_name, developer_login=dev_login).one()
         except exc.NoResultFound:
-            developer = DeveloperClass(project_id=project_id, developer_id=dev_id)
+            developer = Class(project_name=project_name, developer_login=dev_login)
             session.add(developer)
             session.commit()
-            session.query(DeveloperClass).filter_by(project_id=project_id, developer_id=dev_id).one()
