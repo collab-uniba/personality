@@ -1,4 +1,6 @@
+from sqlalchemy import BigInteger
 from sqlalchemy import Column
+from sqlalchemy import Integer
 from sqlalchemy import String
 
 from .setup import Base
@@ -7,7 +9,8 @@ from .setup import Base
 class ApacheDeveloper(Base):
     __tablename__ = 'developers'
 
-    login = Column(String(125), primary_key=True)
+    id = Column(BigInteger, primary_key=True)
+    login = Column(String(255), unique=True, nullable=False)
     name = Column(String(255), nullable=False)
 
     def __init__(self,
@@ -21,14 +24,15 @@ class ApacheDeveloper(Base):
 class ApacheProject(Base):
     __tablename__ = 'projects'
 
-    name = Column(String(255), primary_key=True)
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), unique=True, nullable=False)
     status = Column(String(24))
     category = Column(String(32))
     language = Column(String(24))
     pmc_chair = Column(String(255))  # , ForeignKey("developers.name") ApacheDeveloper
     url = Column(String(255))
     repository_url = Column(String(255), nullable=False)
-    repository_type = Column(String(8), nullable=False)
+    repository_type = Column(String(10), nullable=False)
     bug_tracker_url = Column(String(255))
     dev_ml_url = Column(String(255), nullable=False)
     user_ml_url = Column(String(255), nullable=False)
@@ -61,26 +65,26 @@ class ApacheProject(Base):
 class ProjectCommitter(Base):
     __tablename__ = 'project_committers'
 
-    project_name = Column(String(255), primary_key=True)
-    developer_login = Column(String(125), primary_key=True)
+    project_id = Column(Integer, primary_key=True)
+    developer_id = Column(BigInteger, primary_key=True)
 
     def __init__(self,
-                 project_name,
-                 developer_login
+                 project_id,
+                 developer_id
                  ):
-        self.project_name = project_name
-        self.developer_login = developer_login
+        self.project_id = project_id
+        self.developer_id = developer_id
 
 
 class PmcMember(Base):
     __tablename__ = 'pmc_members'
 
-    project_name = Column(String(255), primary_key=True)
-    developer_login = Column(String(125), primary_key=True)
+    project_id = Column(Integer, primary_key=True)
+    developer_id = Column(BigInteger, primary_key=True)
 
     def __init__(self,
-                 project_name,
-                 developer_login
+                 project_id,
+                 developer_id
                  ):
-        self.project_name = project_name
-        self.developer_login = developer_login
+        self.project_id = project_id
+        self.developer_id = developer_id
