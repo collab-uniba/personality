@@ -37,7 +37,7 @@ class ApacheSpider(CrawlSpider):
             options.add_argument("--test-type")
             self.driver = webdriver.Chrome(chrome_options=options)
 
-        SessionWrapper.load_config('apache_crawler/cfg/setup.yml')
+        SessionWrapper.load_config('orm/cfg/setup.yml')
         SessionWrapper.new(init=True)
 
     def parse_project_list(self, response):
@@ -48,6 +48,7 @@ class ApacheSpider(CrawlSpider):
                 (By.XPATH, '//div[@id="list"]/ul/li//a')))
         except TimeoutException:
             self.log.error('Timeout error waiting for resolution of {0}'.format(response.url))
+            self.driver.save_screenshot('project-list.png')
             return
         try:
             hrefs = scrapy.Selector(text=self.driver.page_source).xpath('//div[@id="list"]/ul/li//a/@href').extract()
@@ -104,7 +105,7 @@ class ApacheSpider(CrawlSpider):
             self.log.error('Project %s is missing description information, skipped' % response.url.split('?')[1])
         except (TimeoutException, WebDriverException):
             self.log.error('Timeout error waiting for resolution of {0}'.format(response.url))
-            self.driver.save_screenshot('screenshot/%s.png' % response.url.split('?')[1])
+            self.driver.save_screenshot('project-%s.png' % response.url.split('?')[1])
         except (NoSuchElementException, AttributeError):
             self.log.error('XPath error parsing url %s' % response.url)
 
@@ -142,7 +143,7 @@ class ApacheSpider(CrawlSpider):
 
         except (TimeoutException, WebDriverException):
             self.log.error('Timeout error waiting for resolution of {0}'.format(committee_url))
-            self.driver.save_screenshot('%-screenshot.png' % committee_url.split('?')[1])
+            self.driver.save_screenshot('committee-%s.png' % committee_url.split('?')[1])
         except NoSuchElementException:
             self.log.error('XPath error parsing url %s' % committee_url)
         return item

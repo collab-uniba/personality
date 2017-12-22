@@ -12,8 +12,8 @@ import traceback
 from scrapy.exceptions import DropItem
 from sqlalchemy.orm import exc
 
-from orm.setup import SessionWrapper
 from orm.apache_tables import *
+from orm.setup import SessionWrapper
 
 
 class ApacheCrawlerPipeline(object):
@@ -49,21 +49,21 @@ class DatabaseStoragePipeline(object):
             for c in committers:
                 c_name, c_login = c.split('#')
                 c_id = self.add_developer(session, c_login, c_name)
-                self.link_dev_project(session, project_id, c_id, 'apache_crawler.orm.tables', 'ProjectCommitter')
+                self.link_dev_project(session, project_id, c_id, 'orm.apache_tables', 'ProjectCommitter')
 
             members = item['pmc_members'].split(',')
             for m in members:
                 m_name, m_login = m.split('#')
                 m_id = self.add_developer(session, m_login, m_name)
-                self.link_dev_project(session, project_id, m_id, 'apache_crawler.orm.tables', 'PmcMember')
+                self.link_dev_project(session, project_id, m_id, 'orm.apache_tables', 'PmcMember')
         except KeyError:
             self.log.error('Structural error found prepping to store item %s' % item['project'])
             traceback.print_exc()
-            raise DropItem('Dropping invalid an item with invalid structure %s' % item['project'])
+            raise DropItem('Dropping item with invalid structure %s' % item['project'])
         except Exception:
             self.log.error('Consistency error storing data for %s in the database' % item['project'])
             traceback.print_exc()
-            raise DropItem('Dropping invalid an item with invalid structure %s' % item['project'])
+            raise DropItem('Dropping item with invalid structure %s' % item['project'])
         return item
 
     def add_project(self, session, item, pmc_login):
@@ -108,8 +108,8 @@ class DatabaseStoragePipeline(object):
         Class = getattr(importlib.import_module(module), class_name)
 
         try:
-            session.query(Class).filter_by(project_name=project_id, developer_login=dev_id).one()
+            session.query(Class).filter_by(project_id=project_id, developer_id=dev_id).one()
         except exc.NoResultFound:
-            instance = Class(project_name=project_id, developer_login=dev_id)
+            instance = Class(project_id=project_id, developer_id=dev_id)
             session.add(instance)
             session.commit()

@@ -2,13 +2,13 @@ import logging
 import sys
 
 from orm import SessionWrapper
-from orm.apache_tables import ApacheProject
+from orm import ApacheProject
 from pymlstats import Application
 
 
 def get_mailing_lists():
     log.info('Retrieving Git project mailing lists')
-    SessionWrapper.load_config('../apache_crawler/apache_crawler/cfg/setup.yml')
+    SessionWrapper.load_config('../apache_crawler/orm/cfg/setup.yml')
     session = SessionWrapper.new(init=False)
     mls = session.query(ApacheProject.dev_ml_url, ApacheProject.user_ml_url).filter_by(repository_type='git').all()
     log.debug('Retrieved %s projects and %s mailing lists' % (len(mls), 2 * len(mls)))
