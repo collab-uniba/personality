@@ -1,3 +1,0 @@
-[submodule "submodules/mlstats"]
-	path = submodules/mlstats
-	url = git://github.com/MetricsGrimoire/MailingListStats.git
