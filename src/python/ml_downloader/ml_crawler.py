@@ -33,7 +33,7 @@ def start(mailing_lists_f):
 
     projects_mailing_lists = [m for m in mls_all if m not in mls_done]
     if not projects_mailing_lists:
-        print('All mailing lists seem to have been already parsed.'
+        print('All mailing lists seem to have been already mined.'
               'Please, manually delete file ''temp.mls'' if you want to start'
               'downloading them again.')
         return
@@ -59,7 +59,7 @@ def start(mailing_lists_f):
                         backend=None,
                         offset=0)
             temp.write("%s\n" % user_dev_mls)
-        except Exception as e:
+        except Exception:
             log.error('Error parsing mailing list %s' % user_dev_mls)
             error.write(user_dev_mls)
 
