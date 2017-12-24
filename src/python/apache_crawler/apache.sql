@@ -24,7 +24,7 @@ DROP TABLE IF EXISTS `developers`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `developers` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `login` varchar(255) NOT NULL,
+  `login` varchar(255) CHARACTER SET utf8 NOT NULL,
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `login` (`login`)
@@ -98,7 +98,7 @@ DROP TABLE IF EXISTS `projects`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `projects` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
+  `name` varchar(255) CHARACTER SET utf8 NOT NULL,
   `status` varchar(24) DEFAULT NULL,
   `category` varchar(32) DEFAULT NULL,
   `language` varchar(24) DEFAULT NULL,
