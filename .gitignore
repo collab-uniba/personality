@@ -102,3 +102,6 @@ ENV/
 
 .idea
 *.swp
+*.png
+src/python/git_cloner/requirements.txt
+
