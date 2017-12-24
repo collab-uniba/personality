@@ -43,6 +43,9 @@ def get_projects():
 
 
 if __name__ == '__main__':
+    logging.basicConfig()
     log = logging.getLogger('git_cloner')
+    log.setLevel(logging.DEBUG)
+
     git_projects = get_projects()
     start(git_projects)
