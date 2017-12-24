@@ -1,5 +1,10 @@
 # personality
 
+## Cloning
+```bash
+$ git clone https://github.com/collab-uniba/personality.git --recursive
+```
+
 ## Crawl Apache projects
 *Setup*
 
