@@ -41,8 +41,12 @@ class DatabaseStoragePipeline(object):
         session = SessionWrapper.new(init=False)
 
         try:
-            pmc_name, pmc_login = item['pmc_chair'].split('#')
-            self.add_developer(session, pmc_login, pmc_name)
+            try:
+                pmc_name, pmc_login = item['pmc_chair'].split('#')
+                self.add_developer(session, pmc_login, pmc_name)
+            except KeyError:
+                self.log.warning('PCM chair missing for project %s' & item['project'])
+                pmc_login = 'undefined'
             project_id = self.add_project(session, item, pmc_login)
 
             committers = item['committers'].split(',')
