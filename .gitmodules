@@ -1,0 +1,3 @@
+[submodule "submodules/mlminer"]
+	path = submodules/mlminer
+	url = https://github.com/bateman/MailingListStats.git
