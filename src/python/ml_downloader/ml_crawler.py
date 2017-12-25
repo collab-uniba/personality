@@ -1,5 +1,4 @@
-import logging
-import sys
+import requests
 
 from orm import ApacheProject
 from orm import SessionWrapper
@@ -22,6 +21,17 @@ def store_mailing_lists(ml_lists, dest):
             f.write('%s\n' % m_user)
 
 
+def exclude_broken(_all, _done):
+    with(open('error.mls', mode='a')) as error:
+        for url in _all:
+            request = requests.get(url)
+            if request.status_code != 200:
+                _done.append(url)
+            else:
+                error.write('Broken url excluded %s' % url)
+    return _done
+
+
 def start(mailing_lists_f):
     mls_all = list()
     with(open(mailing_lists_f, mode='r')) as f:
@@ -35,6 +45,8 @@ def start(mailing_lists_f):
                 mls_done.append(l.strip())
     except IOError:
         open('temp.mls', mode='w')
+
+    mls_done = exclude_broken(mls_all, mls_done)
 
     projects_mailing_lists = [m for m in mls_all if m not in mls_done]
     if not projects_mailing_lists:

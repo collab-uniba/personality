@@ -4,6 +4,7 @@ Automat==0.6.0
 beautifulsoup4==4.6.0
 certifi==2017.11.5
 cffi==1.11.2
+chardet==3.0.4
 constantly==15.1.0
 cryptography==2.1.4
 cssselect==1.0.1
@@ -23,6 +24,7 @@ pygit2==0.26.2
 pyOpenSSL==17.5.0
 PyYAML==3.12
 queuelib==1.4.2
+requests==2.18.4
 Scrapy==1.4.0
 selenium==3.8.0
 service-identity==17.0.0
@@ -31,5 +33,6 @@ smmap2==2.0.3
 SQLAlchemy==1.1.15
 SQLAlchemy-Utils==0.32.21
 Twisted==17.9.0
+urllib3==1.22
 w3lib==1.18.0
 zope.interface==4.4.3
