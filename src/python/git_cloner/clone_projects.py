@@ -10,7 +10,7 @@ from orm.setup import SessionWrapper
 def start(projects, destination_dir='./apache_repos'):
     log.info("Starting project cloning.")
 
-    for slug in projects:
+    for slug, url in projects:
         slug = slug.strip()
         s2f = slug_to_folder_name(slug)
         dest = os.path.join(destination_dir, s2f)
@@ -25,7 +25,7 @@ def start(projects, destination_dir='./apache_repos'):
                 log.error("Error updating git repo in folder %s" % dest)
         else:
             try:
-                RepoCloner.clone(slug, destination_dir)
+                RepoCloner.clone(slug, destination_dir, url)
                 log.info('Project repository {0} cloned into {1}'.format(slug, s2f))
                 RepoCloner.update_submodules(dest)
             except:
@@ -38,7 +38,7 @@ def get_projects():
     SessionWrapper.load_config('../apache_crawler/orm/cfg/setup.yml')
     session = SessionWrapper.new(init=False)
 
-    projects = session.query(ApacheProject.name).filter_by(repository_type='git').all()
+    projects = session.query(ApacheProject.name, ApacheProject.repository_url).filter_by(repository_type='git').all()
     return projects
 
 

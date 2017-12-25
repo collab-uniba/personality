@@ -16,11 +16,9 @@ def slug_to_folder_name(slug):
 class RepoCloner:
 
     @staticmethod
-    def clone(slug, repos_folder):
+    def clone(slug, repos_folder, url):
         try:
             path = os.path.join(repos_folder, slug_to_folder_name(slug))
-            owner, repo = slug.split('/')
-            url = 'https://github.com/{0}/{1}.git'.format(owner, repo)
 
             log.info(msg='Cloning repo {0} into {1}.'.format(slug, path))
             pygit2.clone_repository(url=url, path=path)
