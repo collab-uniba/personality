@@ -12,6 +12,7 @@ def start(projects, destination_dir='./apache_repos'):
 
     for slug, url in projects:
         slug = slug.strip()
+        log.info('Processing %s' % slug)
         s2f = slug_to_folder_name(slug)
         dest = os.path.join(destination_dir, s2f)
 

@@ -18,6 +18,7 @@ class RepoCloner:
     @staticmethod
     def clone(slug, repos_folder, url):
         try:
+            repos_folder = os.path.abspath(repos_folder)
             path = os.path.join(repos_folder, slug_to_folder_name(slug))
 
             log.info(msg='Cloning repo {0} into {1}.'.format(slug, path))
@@ -28,6 +29,7 @@ class RepoCloner:
     @staticmethod
     def update_submodules(repos_folder):
         try:
+            repos_folder = os.path.abspath(repos_folder)
             path = os.path.join(repos_folder, '.git')
 
             log.info(msg='Updating submodules of repo at {0}.'.format(path))
@@ -39,8 +41,9 @@ class RepoCloner:
     @staticmethod
     def pull(dest):
         try:
+            dest = os.path.abspath(dest)
             repo = Repo(path=dest)
             o = repo.remotes.origin
-            o.pull()
+            o.pull(refspec='refs/heads/master:refs/heads/origin')
         except Exception as e:
             log.error('Error pulling git repo at {0}'.format(e))
