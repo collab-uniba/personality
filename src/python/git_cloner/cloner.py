@@ -1,17 +1,9 @@
 import logging
 import os
+import subprocess
 
-import pygit2
-from git import Repo
-
-log = logging.getLogger('RepoCloner')
-
-
-def slug_to_folder_name(slug):
-    if slug is None:
-        return None
-    return '_____'.join(slug.split('/'))
-
+log = logging.getLogger('git_cloner')
+log.setLevel(logging.DEBUG)
 
 class RepoCloner:
 
@@ -19,31 +11,21 @@ class RepoCloner:
     def clone(slug, repos_folder, url):
         try:
             repos_folder = os.path.abspath(repos_folder)
-            path = os.path.join(repos_folder, slug_to_folder_name(slug))
-
-            log.info(msg='Cloning repo {0} into {1}.'.format(slug, path))
-            pygit2.clone_repository(url=url, path=path)
+            log.info(msg='Cloning repo {0}'.format(slug))
+            cmd = 'git clone {0} {1} --recursive'.format(url, slug)
+            process = subprocess.Popen(cmd.split(), cwd=repos_folder, stdout=subprocess.PIPE)
+            output, _ = process.communicate()
+            log.info(output.decode("utf-8").strip())
         except Exception as e:
             log.error('Error cloning repo {0}: {1}'.format(slug, e))
-
-    @staticmethod
-    def update_submodules(repos_folder):
-        try:
-            repos_folder = os.path.abspath(repos_folder)
-            path = os.path.join(repos_folder, '.git')
-
-            log.info(msg='Updating submodules of repo at {0}.'.format(path))
-            repo = pygit2.Repository(path=path)
-            repo.update_submodules()
-        except Exception as e:
-            log.error('Error updating submodules at {0}'.format(e))
 
     @staticmethod
     def pull(dest):
         try:
             dest = os.path.abspath(dest)
-            repo = Repo(path=dest)
-            o = repo.remotes.origin
-            o.pull(refspec='refs/heads/master:refs/heads/origin')
+            cmd = 'git pull origin master'
+            process = subprocess.Popen(cmd.split(), cwd=dest, stdout=subprocess.PIPE)
+            output, _ = process.communicate()
+            log.info(output.decode("utf-8").strip())
         except Exception as e:
             log.error('Error pulling git repo at {0}'.format(e))

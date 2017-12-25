@@ -2,7 +2,6 @@ import logging
 import os
 
 from git_cloner.cloner import RepoCloner
-from git_cloner.cloner import slug_to_folder_name
 from orm.apache_tables import ApacheProject
 from orm.setup import SessionWrapper
 
@@ -13,24 +12,21 @@ def start(projects, destination_dir='./apache_repos'):
     for slug, url in projects:
         slug = slug.strip()
         log.info('Processing %s' % slug)
-        s2f = slug_to_folder_name(slug)
-        dest = os.path.join(destination_dir, s2f)
+        dest = os.path.join(destination_dir, slug)
 
         if os.path.exists(dest):
             log.info(
                 'Project {0} already available locally in {1}, performing an update.'.format(slug, dest))
             try:
                 RepoCloner.pull(dest)
-                RepoCloner.update_submodules(dest)
             except:
                 log.error("Error updating git repo in folder %s" % dest)
         else:
             try:
                 RepoCloner.clone(slug, destination_dir, url)
-                log.info('Project repository {0} cloned into {1}'.format(slug, s2f))
-                RepoCloner.update_submodules(dest)
+                log.info('Project repository {0} cloned into {1}'.format(slug, slug))
             except:
-                log.error('Error cloning repo {0} into {1}'.format(slug, s2f))
+                log.error('Error cloning repo {0} into {1}'.format(slug, slug))
 
     log.info('Done.')
 
