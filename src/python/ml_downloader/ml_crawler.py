@@ -1,6 +1,8 @@
+import logging
+
 import requests
 
-from orm import ApacheProject
+from apache_crawler.orm import ApacheProject
 from orm import SessionWrapper
 from pymlstats.main import Application
 

@@ -2,8 +2,8 @@ import logging
 import os
 
 from git_cloner.cloner import RepoCloner
-from orm.apache_tables import ApacheProject
-from orm.setup import SessionWrapper
+from apache_crawler.orm.apache_tables import ApacheProject
+from db.setup import SessionWrapper
 
 
 def start(projects, destination_dir='./apache_repos'):
