@@ -1,18 +1,24 @@
 import logging
+import sys
 
 import requests
 
-from apache_crawler.orm import ApacheProject
-from orm import SessionWrapper
+from apache_projects.orm import ApacheProject
+from db import SessionWrapper
+from ml_downloader.orm import MailingList
 from pymlstats.main import Application
 
 
 def get_mailing_lists():
     log.info('Retrieving Git project mailing lists')
-    SessionWrapper.load_config('../apache_crawler/orm/cfg/setup.yml')
+    SessionWrapper.load_config('../apache_projects/orm/cfg/setup.yml')
     session = SessionWrapper.new(init=False)
-    mls = session.query(ApacheProject.dev_ml_url, ApacheProject.user_ml_url).filter_by(repository_type='git').all()
-    log.info('Retrieved %s projects and %s mailing lists' % (len(mls), 2 * len(mls)))
+    res = session.query(ApacheProject.dev_ml_url, ApacheProject.user_ml_url).filter_by(repository_type='git').all()
+    mls = list()
+    for r in res:
+        mls.append(r[0])
+        mls.append(r[1])
+    log.info('%s retrieved' % len(mls))
     return mls
 
 
@@ -24,6 +30,7 @@ def store_mailing_lists(ml_lists, dest):
 
 
 def exclude_broken(_all, _done):
+    log.info('Excluding mailing lists with broken archive urls')
     with(open('error.mls', mode='a')) as error:
         for url in _all:
             request = requests.get(url)
@@ -31,56 +38,55 @@ def exclude_broken(_all, _done):
                 _done.append(url)
             else:
                 error.write('Broken url excluded %s' % url)
+    log.info('%s excluded as done or broken' % len(_done))
     return _done
 
 
-def start(mailing_lists_f):
-    mls_all = list()
-    with(open(mailing_lists_f, mode='r')) as f:
-        for l in f:
-            mls_all.append(l.strip())
+def exclude_done():
+    log.info('Excluding mailing lists already analyzed')
+    SessionWrapper.load_config('cfg/setup.yml')
+    session = SessionWrapper.new(init=True)
+    done = list()
+    res = session.query(MailingList.mailing_list_url).all()
+    for r in res:
+        done.append(r[0] + '/')
+    log.info('%s excluded' % len(done))
+    return done
 
-    mls_done = list()
-    try:
-        with open('temp.mls', mode='r') as temp:
-            for l in temp:
-                mls_done.append(l.strip())
-    except IOError:
-        open('temp.mls', mode='w')
 
-    mls_done = exclude_broken(mls_all, mls_done)
+def get_mailing_lists_to_do(_all, excluded):
+    to_do = [m for m in _all if m not in excluded]
+    return to_do
 
-    projects_mailing_lists = [m for m in mls_all if m not in mls_done]
+
+def start(projects_mailing_lists):
     if not projects_mailing_lists:
         print('All mailing lists seem to have been already mined.\n'
               'Please, manually delete file ''temp.mls'' if you want to start '
               'downloading them again.')
         return
 
-    with(open('temp.mls', mode='a')) as temp:
-        with(open('error.mls', mode='a')) as error:
-            for user_dev_mls in projects_mailing_lists:
-                log.info('Starting mining mailing list %s' % user_dev_mls)
-                try:
-                    app = Application(driver='mysql',
-                                      user=SessionWrapper.u,
-                                      password=SessionWrapper.p[1:],
-                                      dbname=SessionWrapper.db_name,
-                                      host=SessionWrapper.server,
-                                      url_list=(user_dev_mls,),
-                                      report_filename='mlstats-report.log',
-                                      make_report=True,
-                                      be_quiet=False,
-                                      force=False,
-                                      web_user=None,
-                                      web_password=None,
-                                      compressed_dir=None,
-                                      backend=None,
-                                      offset=0)
-                    temp.write("%s\n" % user_dev_mls)
-                except Exception:
-                    log.error('Error parsing mailing list %s' % user_dev_mls)
-                    error.write(user_dev_mls)
+    with(open('error.mls', mode='a', buffering=0)) as error:
+        log.info('Starting mining mailing lists: %s' % len(projects_mailing_lists))
+        try:
+            Application(driver='mysql',
+                        user=SessionWrapper.u,
+                        password=SessionWrapper.p[1:],
+                        dbname=SessionWrapper.db_name,
+                        host=SessionWrapper.server,
+                        url_list=projects_mailing_lists,
+                        report_filename='mlstats-report.log',
+                        make_report=True,
+                        be_quiet=False,
+                        force=False,
+                        web_user=None,
+                        web_password=None,
+                        compressed_dir=None,
+                        backend=None,
+                        offset=0)
+        except Exception as e:
+            log.error('Error parsing mailing lists', e)
+            error.write(e.message)
 
 
 if __name__ == '__main__':
@@ -88,13 +94,10 @@ if __name__ == '__main__':
     log = logging.getLogger('ml_crawler')
     log.setLevel(logging.DEBUG)
     try:
-        mls = sorted(get_mailing_lists())
-        filename = 'git-mls.txt'
-        store_mailing_lists(mls, filename)
-
-        SessionWrapper.load_config('cfg/setup.yml')
-        SessionWrapper.new(init=True)
-
-        start(filename)
+        mls_all = sorted(get_mailing_lists())
+        mls_done_or_broken = exclude_done()
+        mls_done_or_broken = exclude_broken(mls_all, mls_done_or_broken)
+        mls_to_do = get_mailing_lists_to_do(mls_all, mls_done_or_broken)
+        start(mls_to_do)
     except KeyboardInterrupt:
         print >> sys.stderr, '\nReceived Ctrl-C or other break signal. Exiting.'
