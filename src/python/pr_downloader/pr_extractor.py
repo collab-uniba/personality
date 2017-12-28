@@ -151,21 +151,21 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
         else:
             self.seen.add(slug)
 
-        logger.debug('[pid: {0}] Processing {1}'.format(pid, slug))
+        print('[pid: {0}] Processing {1}'.format(pid, slug))
 
         try:
             _token = self.tokens_map[pid]
             g = Github(_token)
             # check rate limit before starting
             PrAndCommentExtractor.wait_if_depleted(pid, g)
-            logger.debug(msg="[pid: %s] Process not depleted, keep going." % pid)
+            print("[pid: %s] Process not depleted, keep going." % pid)
             repo = g.get_repo(slug)
 
             if repo:
                 for issue in repo.get_issues(state=u'closed'):
                     try:
-                        logger.info(
-                            msg='[pid: {0}] Fetching closed pull-request {1} from {2}'.format(pid, issue.number,
+                        print(
+                            '[pid: {0}] Fetching closed pull-request {1} from {2}'.format(pid, issue.number,
                                                                                               slug))
                         metadata_pr = PrAndCommentExtractor.parse_pull_request(pid, g, issue)
                         if metadata_pr:
@@ -185,8 +185,8 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
                         continue
                 for issue in repo.get_issues(state=u'open'):
                     try:
-                        logger.info(
-                            msg='[pid: {0}] Fetching open pull-request {1} from {2}'.format(pid, issue.number,
+                        print(
+                            '[pid: {0}] Fetching open pull-request {1} from {2}'.format(pid, issue.number,
                                                                                             slug))
                         metadata = PrAndCommentExtractor.parse_pull_request(pid, g, issue)
                         pr_list.append(metadata)
@@ -217,12 +217,12 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
             traceback.print_exc(e)
             return slug, pid, None, pr_list, str(e).strip().replace("\n", " ").replace("\r", " ")  # , comments
 
-        logger.debug((_token, PrAndCommentExtractor.get_rate_limit(g)))
+        print((_token, PrAndCommentExtractor.get_rate_limit(g)))
         return slug, pid, _token, pr_list, None  # , comments
 
     def start(self, projects, issues_f):  # , comments_f):
         output_folder = os.path.abspath('./')
-        log_writer = CsvWriter(os.path.join(output_folder, 'error.log'), 'a')
+        #log_writer = CsvWriter(os.path.join(output_folder, 'error.log'), 'a')
 
         f = os.path.join(output_folder, issues_f)
         header = ['slug',
@@ -251,7 +251,7 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
                   'html_url']
         pr_writer = CsvWriter(f, 'w+')
         pr_writer.writerow(header)
-        logger.debug("Opened pull request file %s" % issues_f)
+        print("Opened pull request file %s" % issues_f)
         # header = None
         # f = os.path.join(output_folder, comments_f)
         # if not os.path.exists(f):
@@ -265,28 +265,29 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
         self.initialize()
         #pool = Pool(processes=self.tokens.length(), initializer=self.initialize, initargs=())
         pool = Pool(processes=1, initializer=self.initialize, initargs=())
-        projects = ["apache/lucy", "apache/commons-math", "apache/vxquery"]
+        #projects = ["apache/lucy", "apache/commons-math", "apache/vxquery"]
+        projects = ['apache/giraph']
 
         for result in pool.imap_unordered(self.fetch_prs_comments, projects):
             (slug, pid, _token, pull_requests, error) = result  # , comments_list
             if error is not None:
-                logging.error(msg=[slug, error])
-                log_writer.writerow([slug, error])
+                logger.error(msg=[slug, error])
+                #log_writer.writerow([slug, error])
             # elif comments_list:
             else:
-                logger.info("Saving pull requests to temp file")
+                print("Saving pull requests to temp file")
                 for pr in pull_requests:
                     if pr is not None:
-                        logger.debug(msg="Adding pull request {0} {1}".format([slug], pr[0]))
+                        print("Adding pull request {0} {1}".format([slug], pr[0]))
                         pr_writer.writerow([slug] + pr)
                 # logger.info("Saving comments to temp file")
                 # for comments in comments_list:
                 #     for comment in comments:
                 #         logger.debug(msg="Adding pull-request comment {0} {1}".format([slug], comment[1:]))
                 #         comment_writer.writerow([slug] + comment[1:])
-            logger.info('Done processing %s.' % slug)
+            print('Done processing %s.' % slug)
 
-        log_writer.close()
+        #log_writer.close()
         pr_writer.close()
         # comment_writer.close()
 
@@ -298,16 +299,16 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
         file_classifier = BasicFileTypeClassifier()
 
         old_prs = dict()
-        logger.info(msg="Loading existing issues.... (it may take a while).")
+        print("Loading existing issues.... (it may take a while).")
         for prid in session.query(PullRequest.pr_id).all():
             old_prs[prid[0]] = True
-        logger.info(msg="Pull requests already in the db: {0}".format(len(old_prs)))
+        print("Pull requests already in the db: {0}".format(len(old_prs)))
 
         output_folder = os.path.abspath('./')
         pull_requests = CsvReader(os.path.join(output_folder, pr_f), mode='r')
 
         idx = 0
-        logger.info("Importing new pull requests into the database.")
+        print("Importing new pull requests into the database.")
         for pr in pull_requests.readrows():
             if idx == 0:
                 idx += 1
@@ -370,18 +371,18 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
                                      int(num_deletions),
                                      merge_sha,
                                      html_url)
-                    logger.debug("Adding %s" % gi)
+                    print("Adding %s" % gi)
                     session.add(gi)
                     idx += 1
 
-                    logger.debug("Adding commit shas for %s" % gi)
+                    print("Adding commit shas for %s" % gi)
                     j = 1
                     for csha in commit_shas.split(','):
                         prci = PullRequestCommit(slug, int(pr_id), j, csha)
                         session.add(prci)
                         j += 1
 
-                    logger.debug("Adding commit files for %s" % gi)
+                    print("Adding commit files for %s" % gi)
                     j = 1
                     for cf_cs in commit_files.split(','):
                         try:
@@ -405,7 +406,7 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
                 continue
 
         # session.commit()
-        logger.info("New pull requests added to the database: %s" % str(idx - 1))
+        print("New pull requests added to the database: %s" % str(idx - 1))
 
         # old_comments = dict()
         # logger.info(msg="Loading existing comments.... (it may take a while).")
@@ -450,7 +451,7 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
         #         continue
         #
         # session.commit()
-        # logger.info("New comments added to the database: %s" % str(idx - 1))
+        # printinfo("New comments added to the database: %s" % str(idx - 1))
 
 
 def get_github_slugs(git_dir):
@@ -484,16 +485,16 @@ if __name__ == '__main__':
         tokens_map = manager.dict()
 
         extractor = PrAndCommentExtractor(tokens, tokens_queue, tokens_map)
-        logger.info("Retrieving the list of cloned GitHub project")
+        print("Retrieving the list of cloned GitHub project")
         slugs = get_github_slugs(sys.argv[1])
-        logger.info("%s" % len(slugs))
-        logger.info("Retrieving the list of project already analyzed")
+        print("%s" % len(slugs))
+        print("Retrieving the list of project already analyzed")
         extractor.seen = get_already_parsed_projects()
-        logger.info("%s" % len(extractor.seen))
-        logger.info("Beginning data extraction")
+        print("%s" % len(extractor.seen))
+        print("Beginning data extraction")
         extractor.start(slugs, pr_file)  # , comment_file)
-        logger.info("Storing data into db")
+        print("Storing data into db")
         extractor.add_to_db(pr_file)  # , comment_file)
-        logger.info("Done.")
+        print("Done.")
     except KeyboardInterrupt:
         print('\nReceived Ctrl-C or other break signal. Exiting.', file=sys.stdout)
