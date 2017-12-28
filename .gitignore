@@ -103,6 +103,9 @@ ENV/
 .idea
 *.swp
 *.png
+*.mls
 .DS_Store
-src/python/git_cloner/requirements.txt
+src/python/git_cloner/apache_repos/
 github-api-tokens.txt
+src/python/ml_downloader/git-mls.txt
+src/python/pr_downloader/tmp_pullrequests.csv
