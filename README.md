@@ -1,14 +1,14 @@
 # personality
 
-## Cloning
+## 1. Cloning
 ```bash
 $ git clone https://github.com/collab-uniba/personality.git --recursive
 ```
 
-## Crawl Apache projects
+## 2. Crawl Apache projects
 *Setup*
 
-Use Python 3 environment and install packages from `src/python/apache_crawler/requirements.txt`
+Use Python 3 environment and install packages from `src/python/requirements.txt`
 
 *Execution*
 
@@ -17,7 +17,7 @@ From directory `src/python/apache_crawler` run:
 $ scrapy apache_crawler -t (json|csv) -o apache-projects.(json|csv) [-L DEBUG --logfile apache.log]
 ```
 
-## Mine mailing lists (for git projects only)
+## 3. Mine mailing lists (for git projects only)
 
 *Setup*
 
@@ -25,7 +25,25 @@ Use Python 2 environment and install packages from `src/python/ml_downloader/req
 
 *Execution*
 
-From directory `src/python/ml_download` run:
+From directory `src/python/ml_downloader` run:
 ```bash
-$ python ml_crawler.py
+$ sh run.sh
 ```
+
+## 4. Mine pull requests (for git projects only)
+
+*Setup*
+USe Python 3 environment as described in Step 2. Also, add a new file `gh/github-api-tokens.txt`
+and enter a GitHub API access token per line -- the more the better.
+
+*Execution*
+
+From directory `src/python/pr_downloader` run:
+```bash
+$ sh run.sh ../path/to/git/repos
+```
+
+## 5. Build developer commit history (for git projects only)
+
+
+## 6. Compute developer personality scores per month from emails (for git projects only)
