@@ -44,7 +44,7 @@ def exclude_broken(_all, _done):
 
 def exclude_done():
     log.info('Excluding mailing lists already analyzed')
-    SessionWrapper.load_config('cfg/setup.yml')
+    SessionWrapper.load_config('orm/cfg/setup.yml')
     session = SessionWrapper.new(init=True)
     done = list()
     res = session.query(MailingList.mailing_list_url).all()
