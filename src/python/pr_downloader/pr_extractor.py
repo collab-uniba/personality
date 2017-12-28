@@ -264,7 +264,7 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
         self.initialize()
         pool = Pool(processes=self.tokens.length(), initializer=self.initialize, initargs=())
         # pool = Pool(processes=1, initializer=self.initialize, initargs=())
-        #projects = ["apache/johnzon", "apache/roller"]
+        # projects = ["apache/johnzon", "apache/roller"]
 
         for result in pool.imap_unordered(self.fetch_prs_comments, projects):
             (slug, pid, _token, pull_requests, error) = result  # , comments_list
@@ -383,11 +383,14 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
                     logger.debug("Adding commit files for %s" % gi)
                     j = 1
                     for cf_cs in commit_files.split(','):
-                        cf, cs = cf_cs.split('_#_')
-                        language = file_classifier.label_file(cf)
-                        prci = PullRequestCommitFile(slug, int(pr_id), cs, cf, int(language))
-                        session.add(prci)
-                        j += 1
+                        try:
+                            cf, cs = cf_cs.split('_#_')
+                            language = file_classifier.label_file(cf)
+                            prci = PullRequestCommitFile(slug, int(pr_id), cs, cf, int(language))
+                            session.add(prci)
+                            j += 1
+                        except ValueError:
+                            pass
 
                     try:
                         session.commit()
@@ -460,9 +463,9 @@ if __name__ == '__main__':
     # comment_file = 'tmp_comments.csv'
     into_db = False
 
-    logging.basicConfig()
+    logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger('pr_extractor')
-    logger.setLevel(logging.DEBUG)
+    sys.stderr = open('error.log', mode='w')
 
     tokens = Tokens()
     tokens_iter = tokens.iterator()
