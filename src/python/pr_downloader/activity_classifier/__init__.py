@@ -1,2 +1,2 @@
-__all__ = ['classifier']
+__all__ = ['classifier', 'BasicFileTypeClassifier']
 from .classifier import BasicFileTypeClassifier
