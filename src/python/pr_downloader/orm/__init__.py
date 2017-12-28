@@ -1,3 +1,3 @@
 __all__ = ['github_tables']
 
-from .github_tables import PullRequest, Comment
+from .github_tables import PullRequest, PullRequestCommit, PullRequestCommitFile
