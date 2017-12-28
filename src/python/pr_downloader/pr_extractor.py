@@ -109,36 +109,6 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
 
         return metadata
 
-    # @staticmethod
-    # def parse_pr_comments(pid, g, slug, issue):
-    #     pr_review_comments = list()
-    #
-    #     comments_pglist = issue.get_comments()
-    #     for comment in comments_pglist:
-    #         comment_id = comment.id
-    #         body = comment.body.strip()
-    #         created_at = comment.created_at
-    #         updated_at = comment.updated_at
-    #         user_login = comment.user.login
-    #         user_gh_id = comment.user.id
-    #         pr_review_comments.append(
-    #             [slug, issue.id, issue.number, comment_id, body, created_at, updated_at, user_login, user_gh_id])
-    #
-    #     if issue.pull_request is not None:  # double-check it is an actual PR
-    #         pr = issue.repository.get_pull(issue.number)
-    #         comments_pglist = pr.get_review_comments()
-    #         for comment in comments_pglist:
-    #             comment_id = comment.id
-    #             created_at = comment.created_at
-    #             updated_at = comment.updated_at
-    #             body = comment.body.strip()
-    #             user_login = comment.user.login
-    #             user_gh_id = comment.user.id
-    #             pr_review_comments.append(
-    #                 [slug, pr.id, pr.number, comment_id, body, created_at, updated_at, user_login, user_gh_id])
-    #
-    #     PrAndCommentExtractor.wait_if_depleted(pid, g)
-    #     return pr_review_comments
 
     def fetch_prs_comments(self, slug):
         pid = current_process().pid
@@ -176,7 +146,7 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
                             # if metadata_pr_comments:
                             #    comments.append(metadata_pr_comments)
                     except socket.timeout as ste:
-                        logger.error("Socket timeout parsing issue %s" % issue, ste)
+                        print("Socket timeout parsing issue %s" % issue, ste)
                     except RateLimitExceededException:
                         PrAndCommentExtractor.wait_if_depleted(pid, g)
                         continue
@@ -196,7 +166,7 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
                         # if metadata:
                         #     comments.append(metadata)
                     except socket.timeout as ste:
-                        logger.error("Socket timeout parsing issue %s" % issue, ste)
+                        print("Socket timeout parsing issue %s" % issue, ste)
                         continue
                     except RateLimitExceededException:
                         PrAndCommentExtractor.wait_if_depleted(pid, g)
@@ -252,26 +222,17 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
         pr_writer = CsvWriter(f, 'w+')
         pr_writer.writerow(header)
         print("Opened pull request file %s" % issues_f)
-        # header = None
-        # f = os.path.join(output_folder, comments_f)
-        # if not os.path.exists(f):
-        #     header = ['slug', 'issue_id', 'issue_number', 'comment_id', 'body', 'created_at', 'updated_at',
-        #               'user_login', 'user_github_id']
-        # comment_writer = CsvWriter(f, 'w')
-        # if header:
-        #     comment_writer.writerow(header)
-        # logger.debug("Opened pr comments file %s" % comments_f)
 
         self.initialize()
         #pool = Pool(processes=self.tokens.length(), initializer=self.initialize, initargs=())
         pool = Pool(processes=1, initializer=self.initialize, initargs=())
         #projects = ["apache/lucy", "apache/commons-math", "apache/vxquery"]
-        projects = ['apache/giraph']
+        #projects = ['apache/giraph']
 
         for result in pool.imap_unordered(self.fetch_prs_comments, projects):
             (slug, pid, _token, pull_requests, error) = result  # , comments_list
             if error is not None:
-                logger.error(msg=[slug, error])
+                print([slug, error])
                 #log_writer.writerow([slug, error])
             # elif comments_list:
             else:
@@ -398,66 +359,21 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
                         session.commit()
                     except IntegrityError:
                         # this shouldn't happen, unless the dupe is in the file, not the db
-                        logger.error("Duplicate entries found")
+                        print("Duplicate entries found")
                         continue
             except Exception as e:
                 traceback.print_exc(e)
-                logger.error(pr, e)
+                print(pr, e)
                 continue
 
         # session.commit()
         print("New pull requests added to the database: %s" % str(idx - 1))
 
-        # old_comments = dict()
-        # logger.info(msg="Loading existing comments.... (it may take a while).")
-        # for comment_id in session.query(Comment.comment_id).all():
-        #     old_comments[comment_id[0]] = True
-        # logger.info(msg="Comments already in the db: {0}".format(len(old_comments)))
-        #
-        # comments = CsvReader(os.path.join(output_folder, comments_f), mode='r')
-        #
-        # idx = 0
-        # logger.info("Importing new comments into the database.")
-        # for comment in comments.readrows():
-        #     if idx == 0:
-        #         idx += 1
-        #         continue  # skip header
-        #     try:
-        #         [slug, issue_id, issue_number, comment_id, body, created_at, updated_at, user_login,
-        #          user_github_id] = comment
-        #         # FIXME clean up utf from body
-        #         # does this work???
-        #         body = bytes(body, 'utf-8').decode('utf-8', 'ignore')
-        #
-        #         if not int(comment_id) in old_comments:
-        #             c = Comment(comment_id, slug, issue_id, issue_number, created_at, updated_at, user_github_id,
-        #                              user_login, body)
-        #             logger.debug("Adding issue comment %s." % c)
-        #             session.add(c)
-        #             session.commit()
-        #             idx += 1
-        #
-        #         if not idx % 1000:
-        #             try:
-        #                 logger.info("Comments added so far: %s" % idx)
-        #                 # session.commit()
-        #             except IntegrityError:
-        #                 # this shouldn't happen, unless the dupe is in the file, not the db
-        #                 logger.error("Duplicate entry for comment %s" % comment_id)
-        #                 continue
-        #     except Exception as e:
-        #         traceback.print_exc(e)
-        #         logger.error(comment, e)
-        #         continue
-        #
-        # session.commit()
-        # printinfo("New comments added to the database: %s" % str(idx - 1))
-
 
 def get_github_slugs(git_dir):
     dirs = [d for d in os.listdir(os.path.abspath(git_dir))]
     slugs = ['apache/' + d.strip() for d in dirs]
-    return slugs
+    return sorted(slugs)
 
 
 def get_already_parsed_projects():
