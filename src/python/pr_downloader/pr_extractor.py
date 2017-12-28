@@ -11,6 +11,7 @@ from github import Github
 from github.GithubException import *
 
 from db import SessionWrapper
+from logger import logging_config
 from pr_downloader.activity_classifier import BasicFileTypeClassifier
 from pr_downloader.csvutils import CsvWriter, CsvReader
 from pr_downloader.gh.api_tokens import Tokens
@@ -262,9 +263,9 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
         # logger.debug("Opened pr comments file %s" % comments_f)
 
         self.initialize()
-        pool = Pool(processes=self.tokens.length(), initializer=self.initialize, initargs=())
-        # pool = Pool(processes=1, initializer=self.initialize, initargs=())
-        # projects = ["apache/johnzon", "apache/roller"]
+        #pool = Pool(processes=self.tokens.length(), initializer=self.initialize, initargs=())
+        pool = Pool(processes=1, initializer=self.initialize, initargs=())
+        #projects = ["apache/johnzon", "apache/roller"]
 
         for result in pool.imap_unordered(self.fetch_prs_comments, projects):
             (slug, pid, _token, pull_requests, error) = result  # , comments_list
@@ -276,7 +277,7 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
                 logger.info("Saving pull requests to temp file")
                 for pr in pull_requests:
                     if pr is not None:
-                        logger.debug(msg="Adding pull request {0} {1}".format([slug], pr))
+                        logger.debug(msg="Adding pull request {0} {1}".format([slug], pr[0]))
                         pr_writer.writerow([slug] + pr)
                 # logger.info("Saving comments to temp file")
                 # for comments in comments_list:
@@ -292,8 +293,8 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
     @staticmethod
     def add_to_db(pr_f):
         # create a new session but don't init db tables
-        SessionWrapper.load_config('orm/setup.yml')
-        session = SessionWrapper.new(init=True)
+        SessionWrapper.load_config('orm/cfg/setup.yml')
+        session = SessionWrapper.new(init=False)
         file_classifier = BasicFileTypeClassifier()
 
         old_prs = dict()
@@ -458,31 +459,41 @@ def get_github_slugs(git_dir):
     return slugs
 
 
+def get_already_parsed_projects():
+    seen = set()
+    SessionWrapper.load_config('orm/cfg/setup.yml')
+    s = SessionWrapper.new(init=False)
+    res = s.query(PullRequest.slug).distinct()
+    for r in res:
+        seen.add(r.slug)
+    return seen
+
+
 if __name__ == '__main__':
-    pr_file = 'tmp_pullrequests.csv'
-    # comment_file = 'tmp_comments.csv'
-    into_db = False
+    try:
+        pr_file = 'tmp_pullrequests.csv'
+        # comment_file = 'tmp_comments.csv'
+        logger = logging_config.get_logger('pr_extractor')
 
-    logging.basicConfig(level=logging.DEBUG)
-    logger = logging.getLogger('pr_extractor')
-    sys.stderr = open('error.log', mode='w')
+        tokens = Tokens()
+        tokens_iter = tokens.iterator()
+        manager = Manager()
+        tokens_queue = manager.Queue()
+        for token in tokens_iter:
+            tokens_queue.put(token)
+        tokens_map = manager.dict()
 
-    tokens = Tokens()
-    tokens_iter = tokens.iterator()
-
-    manager = Manager()
-
-    tokens_queue = manager.Queue()
-    for token in tokens_iter:
-        tokens_queue.put(token)
-
-    tokens_map = manager.dict()
-
-    extractor = PrAndCommentExtractor(tokens, tokens_queue, tokens_map)
-    logger.info("Retrieving GitHub project mirrors")
-    slugs = get_github_slugs(sys.argv[1])
-    logger.info("Beginning data extraction")
-    extractor.start(slugs, pr_file)  # , comment_file)
-    logger.info("Storing data into db")
-    extractor.add_to_db(pr_file)  # , comment_file)
-    logger.info("Done.")
+        extractor = PrAndCommentExtractor(tokens, tokens_queue, tokens_map)
+        logger.info("Retrieving the list of cloned GitHub project")
+        slugs = get_github_slugs(sys.argv[1])
+        logger.info("%s" % len(slugs))
+        logger.info("Retrieving the list of project already analyzed")
+        extractor.seen = get_already_parsed_projects()
+        logger.info("%s" % len(extractor.seen))
+        logger.info("Beginning data extraction")
+        extractor.start(slugs, pr_file)  # , comment_file)
+        logger.info("Storing data into db")
+        extractor.add_to_db(pr_file)  # , comment_file)
+        logger.info("Done.")
+    except KeyboardInterrupt:
+        print('\nReceived Ctrl-C or other break signal. Exiting.', file=sys.stdout)
