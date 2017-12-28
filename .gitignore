@@ -103,5 +103,6 @@ ENV/
 .idea
 *.swp
 *.png
+.DS_Store
 src/python/git_cloner/requirements.txt
 github-api-tokens.txt
