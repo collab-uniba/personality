@@ -265,7 +265,7 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
         self.initialize()
         #pool = Pool(processes=self.tokens.length(), initializer=self.initialize, initargs=())
         pool = Pool(processes=1, initializer=self.initialize, initargs=())
-        #projects = ["apache/johnzon", "apache/roller"]
+        projects = ["apache/lucy", "apache/commons-math", "apache/vxquery"]
 
         for result in pool.imap_unordered(self.fetch_prs_comments, projects):
             (slug, pid, _token, pull_requests, error) = result  # , comments_list
@@ -462,7 +462,7 @@ def get_github_slugs(git_dir):
 def get_already_parsed_projects():
     seen = set()
     SessionWrapper.load_config('orm/cfg/setup.yml')
-    s = SessionWrapper.new(init=False)
+    s = SessionWrapper.new(init=True)
     res = s.query(PullRequest.slug).distinct()
     for r in res:
         seen.add(r.slug)

@@ -3,13 +3,13 @@ import logging
 
 def get_logger(name=__file__):
     logger = logging.getLogger(name)
-    #_format = '%(asctime)s - %(name)s - %(levelname)-8s %(message)s'
+    _format = '%(asctime)s - %(name)s - %(levelname)-8s %(message)s'
 
     # create console handler and set level to INFO
     handler = logging.StreamHandler()
     handler.setLevel(logging.INFO)
-    #formatter = logging.Formatter(_format)
-    #handler.setFormatter(formatter)
+    formatter = logging.Formatter(_format)
+    handler.setFormatter(formatter)
     logger.addHandler(handler)
 
     # create error file handler and set level to WARNING
