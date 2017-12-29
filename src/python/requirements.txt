@@ -24,9 +24,12 @@ pygit2==0.26.2
 PyGithub==1.35
 PyJWT==1.5.3
 pyOpenSSL==17.5.0
+pysolr==3.7.0
 python-dateutil==2.6.1
+pytz==2017.3
 PyYAML==3.12
 queuelib==1.4.2
+regex==2017.12.12
 requests==2.18.4
 Scrapy==1.4.0
 selenium==3.8.0
@@ -39,4 +42,5 @@ Twisted==17.9.0
 Unidecode==0.4.21
 urllib3==1.22
 w3lib==1.18.0
+watson-developer-cloud==1.0.2
 zope.interface==4.4.3
