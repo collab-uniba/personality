@@ -224,8 +224,8 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
         print("Opened pull request file %s" % issues_f)
 
         self.initialize()
-        #pool = Pool(processes=self.tokens.length(), initializer=self.initialize, initargs=())
-        pool = Pool(processes=1, initializer=self.initialize, initargs=())
+        pool = Pool(processes=self.tokens.length(), initializer=self.initialize, initargs=())
+        #pool = Pool(processes=1, initializer=self.initialize, initargs=())
         #projects = ["apache/lucy", "apache/commons-math", "apache/vxquery"]
         #projects = ['apache/giraph']
 
@@ -241,11 +241,6 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
                     if pr is not None:
                         print("Adding pull request {0} {1}".format([slug], pr[0]))
                         pr_writer.writerow([slug] + pr)
-                # logger.info("Saving comments to temp file")
-                # for comments in comments_list:
-                #     for comment in comments:
-                #         logger.debug(msg="Adding pull-request comment {0} {1}".format([slug], comment[1:]))
-                #         comment_writer.writerow([slug] + comment[1:])
             print('Done processing %s.' % slug)
 
         #log_writer.close()
@@ -255,7 +250,7 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
     @staticmethod
     def add_to_db(pr_f):
         # create a new session but don't init db tables
-        SessionWrapper.load_config('orm/cfg/setup.yml')
+        SessionWrapper.load_config('../db/cfg/setup.yml')
         session = SessionWrapper.new(init=False)
         file_classifier = BasicFileTypeClassifier()
 
@@ -378,7 +373,7 @@ def get_github_slugs(git_dir):
 
 def get_already_parsed_projects():
     seen = set()
-    SessionWrapper.load_config('orm/cfg/setup.yml')
+    SessionWrapper.load_config('../db/cfg/setup.yml')
     s = SessionWrapper.new(init=True)
     res = s.query(PullRequest.slug).distinct()
     for r in res:
@@ -387,11 +382,10 @@ def get_already_parsed_projects():
 
 
 if __name__ == '__main__':
+    pr_file = 'tmp_pullrequests.csv'
+    # comment_file = 'tmp_comments.csv'
+    logger = logging_config.get_logger('pr_extractor')
     try:
-        pr_file = 'tmp_pullrequests.csv'
-        # comment_file = 'tmp_comments.csv'
-        logger = logging_config.get_logger('pr_extractor')
-
         tokens = Tokens()
         tokens_iter = tokens.iterator()
         manager = Manager()
@@ -408,9 +402,9 @@ if __name__ == '__main__':
         extractor.seen = get_already_parsed_projects()
         print("%s" % len(extractor.seen))
         print("Beginning data extraction")
-        extractor.start(slugs, pr_file)  # , comment_file)
+        extractor.start(slugs, pr_file)
         print("Storing data into db")
-        extractor.add_to_db(pr_file)  # , comment_file)
+        extractor.add_to_db(pr_file)
         print("Done.")
     except KeyboardInterrupt:
-        print('\nReceived Ctrl-C or other break signal. Exiting.', file=sys.stdout)
+        logger.error('\nReceived Ctrl-C or other break signal. Exiting.')

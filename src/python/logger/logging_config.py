@@ -2,28 +2,31 @@ import logging
 
 
 def get_logger(name=__file__):
+    #_format = '%(asctime)s - %(name)s - %(levelname)-8s %(message)s'
+    #logging.basicConfig(format=_format, datefmt='%m/%d/%Y %I:%M:%S %p')
     logger = logging.getLogger(name)
-    _format = '%(asctime)s - %(name)s - %(levelname)-8s %(message)s'
+    logger.setLevel(logging.DEBUG)
 
     # create console handler and set level to INFO
-    handler = logging.StreamHandler()
-    handler.setLevel(logging.INFO)
-    formatter = logging.Formatter(_format)
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.INFO)
+    # create formatter
+    formatter = logging.Formatter('[%(asctime)s - %(name)s - %(levelname)s]: %(message)s')
+    # add formatter to ch
+    ch.setFormatter(formatter)
+    # add ch to logger
+    logger.addHandler(ch)
 
     # create error file handler and set level to WARNING
-    handler = logging.FileHandler('error.log')
-    handler.setLevel(logging.WARNING)
-    #formatter = logging.Formatter(_format)
-    #handler.setFormatter(formatter)
-    logger.addHandler(handler)
+    eh = logging.FileHandler('error.log')
+    eh.setLevel(logging.WARNING)
+    eh.setFormatter(formatter)
+    logger.addHandler(eh)
 
     # create debug file handler and set level to DEBUG
-    handler = logging.FileHandler('debug.log')
-    handler.setLevel(logging.DEBUG)
-    #formatter = logging.Formatter(_format)
-    #handler.setFormatter(formatter)
-    logger.addHandler(handler)
+    dh = logging.FileHandler('debug.log')
+    dh.setLevel(logging.DEBUG)
+    dh.setFormatter(formatter)
+    logger.addHandler(dh)
 
     return logger

@@ -11,7 +11,7 @@ from pymlstats.main import Application
 
 def get_mailing_lists():
     log.info('Retrieving Git project mailing lists')
-    SessionWrapper.load_config('../apache_projects/orm/cfg/setup.yml')
+    SessionWrapper.load_config('../db/cfg/setup.yml')
     session = SessionWrapper.new(init=False)
     res = session.query(ApacheProject.dev_ml_url, ApacheProject.user_ml_url).filter_by(repository_type='git').all()
     mls = list()
@@ -44,7 +44,7 @@ def exclude_broken(_all, _done):
 
 def exclude_done():
     log.info('Excluding mailing lists already analyzed')
-    SessionWrapper.load_config('orm/cfg/setup.yml')
+    SessionWrapper.load_config('../db/cfg/setup.yml')
     session = SessionWrapper.new(init=True)
     done = list()
     res = session.query(MailingList.mailing_list_url).all()

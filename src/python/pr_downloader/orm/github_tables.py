@@ -7,6 +7,7 @@ from unidecode import unidecode
 
 from db.setup import Base
 
+
 class PullRequestCommitFile(Base):
     __tablename__ = 'commit_files'
     __table_args__ = {'extend_existing': True}
@@ -60,7 +61,8 @@ class PullRequest(Base):
     slug = Column(String(255), index=True)
     issue_id = Column(BigInteger, index=True)  # a pr is a special issue in GitHub
     pr_id = Column(BigInteger, index=True)
-    pr_number = Column(Integer)
+    pr_number = Column(Integer)  # duplicate, should be dropped at some point
+    # ALTER TABLE pull_requests DROP COLUMN pr_number;
     state = Column(String(20))
     created_at = Column(DateTime(timezone=True))
     closed_at = Column(DateTime(timezone=True))
@@ -109,7 +111,7 @@ class PullRequest(Base):
         self.slug = slug
         self.issue_id = issue_id
         self.pr_id = pr_id
-        self.pr_number = pr_num
+        #self.pr_number = pr_num
         self.state = state
         self.merged = merged
 

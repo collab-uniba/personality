@@ -37,7 +37,7 @@ class ApacheSpider(CrawlSpider):
             options.add_argument("--test-type")
             self.driver = webdriver.Chrome(chrome_options=options)
 
-        SessionWrapper.load_config('orm/cfg/setup.yml')
+        SessionWrapper.load_config('../../db/cfg/setup.yml')
         SessionWrapper.new(init=True)
 
     def parse_project_list(self, response):

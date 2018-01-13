@@ -43,5 +43,5 @@ class BaseGitHubThreadedExtractor(object):
         sleep_duration = BaseGitHubThreadedExtractor.compute_sleep_duration(g)
         if not remaining > 5:
             BaseGitHubThreadedExtractor.log.info(
-                msg="[pid: {0}] Process depleted, going to sleep for {1} min.".format(pid, int(sleep_duration / 60)))
+                "[pid: {0}] Process depleted, going to sleep for {1} min.".format(pid, int(sleep_duration / 60)))
             sleep(sleep_duration)

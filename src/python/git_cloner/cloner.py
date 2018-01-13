@@ -11,7 +11,6 @@ class RepoCloner:
     def clone(slug, repos_folder, url):
         try:
             repos_folder = os.path.abspath(repos_folder)
-            log.info(msg='Cloning repo {0}'.format(slug))
             cmd = 'git clone {0} {1} --recursive'.format(url, slug)
             process = subprocess.Popen(cmd.split(), cwd=repos_folder, stdout=subprocess.PIPE)
             output, _ = process.communicate()

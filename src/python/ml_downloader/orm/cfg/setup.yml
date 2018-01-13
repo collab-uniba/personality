@@ -1,6 +1,0 @@
-mysql:
-    host: 127.0.0.1
-    user: fabio
-    passwd: cC6k6Y520me25We
-    db: apache_mlstats
-

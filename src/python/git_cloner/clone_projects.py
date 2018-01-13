@@ -2,12 +2,12 @@ import logging
 import os
 
 from git_cloner.cloner import RepoCloner
-from apache_crawler.orm.apache_tables import ApacheProject
+from apache_projects.orm.apache_tables import ApacheProject
 from db.setup import SessionWrapper
 
 
 def start(projects, destination_dir='./apache_repos'):
-    log.info("Starting project cloning.")
+    log.info("Starting project cloning")
 
     for slug, url in projects:
         slug = slug.strip()
@@ -28,11 +28,11 @@ def start(projects, destination_dir='./apache_repos'):
             except:
                 log.error('Error cloning repo {0} into {1}'.format(slug, slug))
 
-    log.info('Done.')
+    log.info('Done')
 
 
 def get_projects():
-    SessionWrapper.load_config('../apache_crawler/orm/cfg/setup.yml')
+    SessionWrapper.load_config('../db/cfg/setup.yml')
     session = SessionWrapper.new(init=False)
 
     projects = session.query(ApacheProject.name, ApacheProject.repository_url).filter_by(repository_type='git').all()
