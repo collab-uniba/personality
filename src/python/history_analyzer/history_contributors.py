@@ -19,13 +19,8 @@ def main():
     mls = sorted(session.query(MailingLists.mailing_list_name, MailingLists.mailing_list_url).all())
     for p in projects:
         logger.info('Starting the analysis of project %s' % p.name)
-        if True:  # for ml in mls:
-            if True:  # ml.mailing_list_name.startswith(p.name):
-                # project committers as listed on ASF project page
-                # project_committers = session.query(ApacheDeveloper.id, ApacheDeveloper.login).filter(
-                #    ProjectCommitter.project_id == p.id,
-                #    ProjectCommitter.developer_id == ApacheDeveloper.id).distinct().all()
-
+        for ml in mls:
+            if ml.mailing_list_name.startswith(p.name):
                 # all distinct commit authors for current project
                 project_authors = session.query(Commit.author_id).filter(Commit.repo_id == GithubRepository.id,
                                                                          GithubRepository.slug == p.name).distinct().all()
@@ -90,7 +85,7 @@ def main():
                             tot_src_loc_deleted_authored += c.src_loc_deleted
                             tot_src_files_touched_authored += c.num_src_files_touched
 
-                            authored_commit_shas = ','.join(authored_commit_shas)
+                        authored_commit_shas = ','.join(authored_commit_shas)
 
                     integrated_commit_shas = list()
                     n_integrated_commits = 0
@@ -136,36 +131,36 @@ def main():
                                 tot_src_loc_deleted_integrated += c.src_loc_deleted
                                 tot_src_files_touched_integrated += c.num_src_files_touched
 
-                            integrated_commit_shas = ','.join(integrated_commit_shas)
+                    integrated_commit_shas = ','.join(integrated_commit_shas)
                     try:
-                        entry = CommitHistoryDevProject(c_author.author_id,
-                                                        p.name,
-                                                        n_author_commits,
-                                                        n_integrated_commits,
-                                                        len_author_track_record,
-                                                        len_integrator_track_record,
-                                                        authored_commit_shas,
-                                                        integrated_commit_shas,
-                                                        first_authored_sha,
-                                                        first_authored_datetime,
-                                                        last_authored_sha,
-                                                        last_authored_datetime,
-                                                        first_integrated_sha,
-                                                        first_integrated_datetime,
-                                                        last_integrated_sha,
-                                                        last_integrated_datetime,
-                                                        tot_num_additions_authored,
-                                                        tot_num_deletions_authored,
-                                                        tot_num_files_changed_authored,
-                                                        tot_src_loc_added_authored,
-                                                        tot_src_loc_deleted_authored,
-                                                        tot_src_files_touched_authored,
-                                                        tot_num_additions_integrated,
-                                                        tot_num_deletions_integrated,
-                                                        tot_num_files_changed_integrated,
-                                                        tot_src_loc_added_integrated,
-                                                        tot_src_loc_deleted_integrated,
-                                                        tot_src_files_touched_integrated)
+                        entry = CommitHistoryDevProject(dev_uid=c_author.author_id,
+                                                        project_name=p.name,
+                                                        num_authored_commits=n_author_commits,
+                                                        num_integrated_commits=n_integrated_commits,
+                                                        author_track_record_days=len_author_track_record,
+                                                        committer_track_record_days=len_integrator_track_record,
+                                                        authored_commit_shas=authored_commit_shas,
+                                                        integrated_commit_shas=integrated_commit_shas,
+                                                        first_authored_sha=first_authored_sha,
+                                                        first_authored_datetime=first_authored_datetime,
+                                                        last_authored_sha=last_authored_sha,
+                                                        last_authored_datetime=last_authored_datetime,
+                                                        first_integrated_sha=first_integrated_sha,
+                                                        first_integrated_datetime=first_integrated_datetime,
+                                                        last_integrated_sha=last_integrated_sha,
+                                                        last_integrated_datetime=last_integrated_datetime,
+                                                        tot_num_additions_authored=tot_num_additions_authored,
+                                                        tot_num_deletions_authored=tot_num_deletions_authored,
+                                                        tot_num_files_changed_authored=tot_num_files_changed_authored,
+                                                        tot_src_loc_added_authored=tot_src_loc_added_authored,
+                                                        tot_src_loc_deleted_authored=tot_src_loc_deleted_authored,
+                                                        tot_src_files_touched_authored=tot_src_files_touched_authored,
+                                                        tot_num_additions_integrated=tot_num_additions_integrated,
+                                                        tot_num_deletions_integrated=tot_num_deletions_integrated,
+                                                        tot_num_files_changed_integrated=tot_num_files_changed_integrated,
+                                                        tot_src_loc_added_integrated=tot_src_loc_added_integrated,
+                                                        tot_src_loc_deleted_integrated=tot_src_loc_deleted_integrated,
+                                                        tot_src_files_touched_integrated=tot_src_files_touched_integrated)
                         session.add(entry)
                         session.commit()
                         logger.info(
