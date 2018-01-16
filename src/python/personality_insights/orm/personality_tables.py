@@ -29,6 +29,6 @@ class PersonalityProjectMonth(Base):
         self.scores = scores
 
     def __repr__(self):
-        return 'developer id {0} scores, on project {1}, during month {2}'.format(self.uid,
-                                                                                  self.project,
+        return 'developer id {0} scores, on project {1}, during month {2}'.format(self.dev_uid,
+                                                                                  self.project_name,
                                                                                   self.month)

@@ -1,9 +1,11 @@
+import logging
 import pickle
 import re
 from _datetime import datetime
 from itertools import groupby
 
 from bs4 import BeautifulSoup as BS4
+from requests.exceptions import *
 from sqlalchemy import or_, and_
 from sqlalchemy.orm import exc
 from watson_developer_cloud import WatsonException, WatsonInvalidArgument
@@ -19,10 +21,20 @@ from unmasking.unmask_aliases import OFFSET
 
 
 def get_profile(email_content):
+    json_profile = ''
     try:
-        json_profile = big5_personality.profile(email_content, content_type='text/plain',  # text/html
-                                                raw_scores=True,
-                                                consumption_preferences=True)
+        try:
+            json_profile = big5_personality.profile(email_content, content_type='text/html',  # text/plain
+                                                    raw_scores=True,
+                                                    consumption_preferences=True)
+        except (ConnectionError, ConnectTimeout):
+            logger.error('Connection error, retrying')
+            try:
+                json_profile = big5_personality.profile(email_content, content_type='text/html',  # text/plain
+                                                        raw_scores=True,
+                                                        consumption_preferences=True)
+            except (ConnectionError, ConnectTimeout):
+                logger.error('Connection error on retry')
         return json_profile
     except (WatsonException, WatsonInvalidArgument) as e:
         logger.error(e)
@@ -103,9 +115,11 @@ def get_personality_score_by_month(usr_emails):
     # group by month
     usr_profile_by_month = dict()
     for month, eml_list in groupby(usr_emails, key=lambda e: datetime.strftime(e.first_date, "%Y-%m")):
+        logger.debug('Processing month %s' % month)
         clean_emails = clean_up([x.message_body for x in eml_list])
         json_scores = get_profile('\n\n'.join(clean_emails))
         usr_profile_by_month[month] = json_scores
+    logger.debug('Done')
     return usr_profile_by_month
 
 
@@ -123,12 +137,12 @@ def main():
         and_(ApacheProject.name == GithubRepository.slug, GithubRepository.id == Commit.repo_id)).distinct().all())
 
     for uid in set(alias_map.values()):
-        logger.info('Processing uid %s' % uid)
         # try:
         # sender_id = session.query(MailingListSenderId.id).filter_by(email_address=e.email_address).one()
         # uid = alias_map[sender_id.id]
         aliases = get_alias_ids(alias_map, uid)
         alias_email_addresses = get_alias_email_addresses(aliases + [uid, ])
+        logger.info('Processing uid %s <%s>' % (uid, ','.join(alias_email_addresses)))
 
         for p in projects:
             logger.debug('Processing project %s' % p.name)
@@ -157,7 +171,7 @@ def main():
 
 
 if __name__ == '__main__':
-    logger = logging_config.get_logger('personality_watson')
+    logger = logging_config.get_logger('personality_watson', console_level=logging.DEBUG)
     SessionWrapper.load_config('../db/cfg/setup.yml')
     session = SessionWrapper.new(init=True)
     try:
