@@ -1,7 +1,7 @@
 import logging
 
 
-def get_logger(name=__file__):
+def get_logger(name=__file__, console_level=logging.INFO):
     #_format = '%(asctime)s - %(name)s - %(levelname)-8s %(message)s'
     #logging.basicConfig(format=_format, datefmt='%m/%d/%Y %I:%M:%S %p')
     logger = logging.getLogger(name)
@@ -9,7 +9,7 @@ def get_logger(name=__file__):
 
     # create console handler and set level to INFO
     ch = logging.StreamHandler()
-    ch.setLevel(logging.INFO)
+    ch.setLevel(console_level)
     # create formatter
     formatter = logging.Formatter('[%(asctime)s - %(name)s - %(levelname)s]: %(message)s')
     # add formatter to ch
