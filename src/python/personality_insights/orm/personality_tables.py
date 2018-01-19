@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, BigInteger, Integer
-from sqlalchemy.dialects.mysql import JSON
+from sqlalchemy.dialects.mysql import LONGTEXT
 
 from db.setup import Base
 
@@ -12,7 +12,7 @@ class PersonalityProjectMonth(Base):
     month = Column(String(8), primary_key=True)
     email_count = Column(Integer)
     word_count = Column(BigInteger)
-    scores = Column(JSON)
+    scores = Column(LONGTEXT)
 
     def __init__(self,
                  dev_uid,
@@ -29,6 +29,6 @@ class PersonalityProjectMonth(Base):
         self.scores = scores
 
     def __repr__(self):
-        return 'developer id {0} scores, on project {1}, during month {2}'.format(self.dev_uid,
+        return 'developer id {0} scores for project {1}, during month {2}'.format(self.dev_uid,
                                                                                   self.project_name,
                                                                                   self.month)

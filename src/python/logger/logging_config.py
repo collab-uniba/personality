@@ -16,6 +16,11 @@ def get_logger(name=__file__, console_level=logging.INFO):
     ch.setFormatter(formatter)
     # add ch to logger
     logger.addHandler(ch)
+    # file version of console output
+    chf = logging.FileHandler('console.log')
+    chf.setLevel(console_level)
+    chf.setFormatter(formatter)
+    logger.addHandler(chf)
 
     # create error file handler and set level to WARNING
     eh = logging.FileHandler('error.log')

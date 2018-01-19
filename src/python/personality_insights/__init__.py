@@ -3,7 +3,7 @@ import os
 import yaml
 from watson_developer_cloud import PersonalityInsightsV3
 
-with open(os.path.join(os.getcwd(), 'cfg/watson.yaml'), 'r') as config:
+with open(os.path.join(os.getcwd(), '../personality_insights/cfg/watson.yaml'), 'r') as config:
     cfg = yaml.load(config)
 
     big5_personality = PersonalityInsightsV3(

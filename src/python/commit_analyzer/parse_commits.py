@@ -13,7 +13,7 @@ from sqlalchemy.orm import exc
 from commit_analyzer.orm import *
 from db.setup import SessionWrapper
 from pr_downloader.activity_classifier import BasicFileTypeClassifier
-
+from logger import logging_config
 
 def parse_commits(slug, repos_folder):
     contributors = {}
@@ -188,8 +188,7 @@ def parse_commits(slug, repos_folder):
 
 if __name__ == '__main__':
     logging.basicConfig()
-    logger = logging.getLogger('commit_analyzer')
-    logger.setLevel(logging.DEBUG)
+    logger = logging_config.get_logger('commit_analyzer', logging.DEBUG)
 
     # create a new session and init db tables
     SessionWrapper.load_config('../db/cfg/setup.yml')
