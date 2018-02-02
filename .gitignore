@@ -109,3 +109,5 @@ src/python/git_cloner/apache_repos/
 github-api-tokens.txt
 src/python/ml_downloader/git-mls.txt
 src/python/pr_downloader/tmp_pullrequests.csv
+src/python/db/cfg/setup-confidential.yml
+src/python/personality_insights/cfg/watson-confidential.yaml
