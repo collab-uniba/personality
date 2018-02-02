@@ -53,11 +53,11 @@ From directory `src/python/ml_downloader` run:
 $ sh run.sh
 ```
 
-## 5. Clone git projects
+## 5. Clone Git projects
 
 *Setup*
 
-USe Python 3 environment as described in Step 2.
+Use Python 3 environment as described in Step 3.
 
 *Execution*
 
@@ -67,11 +67,12 @@ $ sh run.sh
 ```
 Projects will be cloned into the subfolder `apache_repos`.
 
+<!---
 ## 5. Mine pull requests (for git projects only)
 
 *Setup*
 
-Use Python 3 environment as described in Step 2. Also, add a new file `gh/github-api-tokens.txt`
+Use Python 3 environment as described in Step 3. Also, add a new file `gh/github-api-tokens.txt`
 and enter a GitHub API access token per line -- the more the better.
 
 *Execution*
@@ -80,7 +81,7 @@ From directory `src/python/pr_downloader` run:
 ```bash
 $ sh run.sh
 ```
-
+-->
 ## 6. Unmask aliases (identify unique developer IDs)
 *Setup*
 
@@ -93,10 +94,10 @@ From directory `src/python/unmasking` run:
 $ sh run.sh
 ```
 
-## 7. Build developer commit history (for git projects only)
+## 7. Build developer commit history (for Git projects only)
 *Setup*
 
-Use Python 3 environment as described in Step 2.
+Use Python 3 environment as described in Step 3.
 
 *Execution*
 
@@ -105,10 +106,10 @@ From directory `src/python/commit_analyzer` run:
 $ sh run.sh
 ```
 
-## 8. Compute developers' Big5 personality scores per month from emails (for git projects only)
+## 8. Compute developers' Big-Five personality scores per month from emails (for Git projects only)
 *Setup*
 
-Use Python 3 environment as described in Step 2.
+Use Python 3 environment as described in Step 3.
 
 *Execution*
 
@@ -120,7 +121,7 @@ $ sh run.sh
 ## 9. Export results
 *Setup*
 
-Use Python 3 environment as described in Step 2.
+Use Python 3 environment as described in Step 3.
 
 *Execution*
 
