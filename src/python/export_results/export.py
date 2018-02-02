@@ -1,7 +1,10 @@
 import json
 import logging
 
+from dateutil.relativedelta import relativedelta
+
 from apache_projects.orm import ApacheProject
+from commit_analyzer.orm import GithubRepository
 from commons.aliasing import load_alias_map
 from commons.csv_utils import CsvWriter
 from db import SessionWrapper
@@ -25,6 +28,8 @@ def merge_result_by_alias(res):
             new_dict['project_status'] = sel[0]['project_status']
             new_dict['project_language'] = sel[0]['project_language']
             new_dict['project_category'] = sel[0]['project_category']
+            new_dict['project_size'] = sel[0]['project_size']
+            new_dict['project_age'] = sel[0]['project_age']
 
             new_dict['author_track_record_days'] = 0
             new_dict['num_authored_commits'] = 0
@@ -145,6 +150,7 @@ def save_commit_results():
     logger.info('Exporting commit data to file %s' % commit_filename)
     commit_header = ['uid', 'project',
                      'project_status', 'project_category', 'project_language',
+                     'project_size', 'project_age',
                      'is_author', 'num_authored_commits', 'author_track_record_days', 'first_authored_datetime',
                      'last_authored_datetime', 'tot_num_additions_authored',
                      'tot_num_deletions_authored', 'tot_num_files_changed_authored',
@@ -173,6 +179,10 @@ def save_commit_results():
             r_dict['project_status'] = res.status
             r_dict['project_category'] = res.category
             r_dict['project_language'] = res.language
+            prj = session.query(GithubRepository.total_commits, GithubRepository.max_commit,
+                                GithubRepository.min_commit).filter_by(slug=r.project_name).one()
+            r_dict['project_size'] = prj.total_commits
+            r_dict['project_age'] = relativedelta(prj.max_commit, prj.min_commit).years
 
             r_dict['is_author'] = r.first_authored_sha is not None
             r_dict['num_authored_commits'] = r.num_authored_commits
@@ -200,7 +210,6 @@ def save_commit_results():
 
             entry_list.append(r_dict)
 
-    # TODO
     entry_list = merge_result_by_alias(entry_list)
     commit_writer.writerows(entry_list)
     commit_writer.close()
