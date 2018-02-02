@@ -24,31 +24,31 @@ personality:
 ```
 
 ## 3. Crawl Apache projects
-* *Setup*
+* *Setup*:
 Use Python 3 environment and install packages from `src/python/requirements.txt`
-* *Execution*
+* *Execution*:
 From directory `src/python/apache_crawler` run:
 ```bash
 $ scrapy apache_crawler -t (json|csv) -o apache-projects.(json|csv) [-L DEBUG --logfile apache.log]
 ```
 
 ## 4. Mine mailing lists (for Git projects only)
-* *Setup*
+* *Setup*:
 Use Python 2 environment and install packages from `src/python/ml_downloader/requirements.txt`.
 Then, recreate database schema as follows:
 ```bash
 $ mysql -u<user> -p<password> apache < submodules/mlminer/db/data_model_mysql.sql
 ```
-* *Execution*
+* *Execution*:
 From directory `src/python/ml_downloader` run:
 ```bash
 $ sh run.sh
 ```
 
 ## 5. Clone Git projects
-* *Setup*
+* *Setup*:
 Use Python 3 environment as described in Step 3.
-* *Execution*
+* *Execution*:
 From directory `src/python/git_cloner` run:
 ```bash
 $ sh run.sh
@@ -71,36 +71,36 @@ $ sh run.sh
 ```
 -->
 ## 6. Unmask aliases (identify unique developer IDs)
-* *Setup*
+* *Setup*:
 Use Python 3 environment as described in Step 2.
-* *Execution*
+* *Execution*:
 From directory `src/python/unmasking` run:
 ```bash
 $ sh run.sh
 ```
 
 ## 7. Build developer commit history (for Git projects only)
-* *Setup*
+* *Setup*:
 Use Python 3 environment as described in Step 3.
-* *Execution*
+* *Execution*:
 From directory `src/python/commit_analyzer` run:
 ```bash
 $ sh run.sh
 ```
 
 ## 8. Compute developers' Big-Five personality scores per month from emails (for Git projects only)
-* *Setup*
+* *Setup*:
 Use Python 3 environment as described in Step 3.
-* *Execution*
+* *Execution*:
 From directory `src/python/personality_insights` run:
 ```bash
 $ sh run.sh
 ```
 
 ## 9. Export results
-* *Setup*
+* *Setup*:
 Use Python 3 environment as described in Step 3.
-* *Execution*
+* *Execution*:
 From directory `src/python/export_results` run:
 ```bash
 $ sh run.sh
