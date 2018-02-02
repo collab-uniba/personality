@@ -1,11 +1,29 @@
-# personality
+# Apache developers Big-Five personality profiler
 
 ## 1. Cloning
 ```bash
 $ git clone https://github.com/collab-uniba/personality.git --recursive
 ```
+## 2. Configuration
+Edit the following configuration files:
+* `/src/python/db/cfg/setup.yaml` - MySQL database configuration
+```yaml
+mysql:
+    host: 127.0.0.1
+    user: root
+    passwd: *******
+    db: apache
+```
+* `./src/python/personality_insights/cfg/watson.yaml` - IBM Watson Personality Insights (you will need to register and 
+get your personal username and password)
+```yaml
+personality:
+    username: secret-user
+    password: secret-password
+    version: 2017-10-13
+```
 
-## 2. Crawl Apache projects
+## 3. Crawl Apache projects
 
 *Setup*
 
@@ -18,14 +36,14 @@ From directory `src/python/apache_crawler` run:
 $ scrapy apache_crawler -t (json|csv) -o apache-projects.(json|csv) [-L DEBUG --logfile apache.log]
 ```
 
-## 3. Mine mailing lists (for git projects only)
+## 4. Mine mailing lists (for git projects only)
 
 *Setup*
 
 Use Python 2 environment and install packages from `src/python/ml_downloader/requirements.txt`.
-Create database schema importing the file `submodules/mlminer/db/data_model_mysql.sql`.
+Then, recreate database schema as follows:
 ```bash
-$ mysql -u <user> -p<password> < data_model_mysql.sql
+$ mysql -u<user> -p<password> apache < submodules/mlminer/db/data_model_mysql.sql
 ```
 
 *Execution*
@@ -35,7 +53,7 @@ From directory `src/python/ml_downloader` run:
 $ sh run.sh
 ```
 
-## 4. Clone git projects
+## 5. Clone git projects
 
 *Setup*
 
