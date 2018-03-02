@@ -1,5 +1,9 @@
 # Apache developers Big-Five personality profiler
 
+## 0. Dataset
+The final result of the scripts (i.e., developers' monthly scores per project) are stored [here](https://raw.githubusercontent.com/collab-uniba/personality/master/src/python/export_results/personality.csv) (CSV format). 
+Instead, the entire MySQL database containing the data scraped from the Apache website, the email archives, and the code metadata obtained from GitHub are stored [here](https://mega.nz/#!IQ91SAZJ!HXIdsZTT9qay3a-BbFAIJUzaPaktWaSr1pCF-ZwH_tY).
+
 ## 1. Cloning
 ```bash
 $ git clone https://github.com/collab-uniba/personality.git --recursive
