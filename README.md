@@ -109,3 +109,4 @@ From directory `src/python/export_results` run:
 ```bash
 $ sh run.sh
 ```
+Results are stored in the file `personality.csv`.
