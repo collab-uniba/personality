@@ -1,4 +1,5 @@
 import csv
+import sys
 
 
 class CsvWriter:
@@ -6,6 +7,7 @@ class CsvWriter:
     A CSV writer which will write rows to CSV file "f",
     which is encoded in the given encoding.
     """
+    csv.field_size_limit(sys.maxsize)
     writer = None
 
     def __init__(self, csv_file, header, mode='w'):
