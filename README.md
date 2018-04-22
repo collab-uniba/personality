@@ -10,7 +10,7 @@ $ git clone https://github.com/collab-uniba/personality.git --recursive
 ```
 ## 2. Configuration
 Edit the following configuration files:
-* `src/python/db/cfg/setup.yaml` - MySQL database configuration
+* `src/python/db/cfg/setup.yml` - MySQL database configuration
 ```yaml
 mysql:
     host: 127.0.0.1
