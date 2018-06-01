@@ -1,5 +1,12 @@
 # Apache developers Big-Five personality profiler
 
+Content and scripts from this repository can be freely reused for academic purposes, provided that you cite the following paper in your work:
+```
+F. Calefato, G. Iaffaldano, F. Lanubile, B. Vasilescu (2018). “On Developers’ Personality in Large-scale
+Distributed Projects: The Case of the Apache Ecosystem.” In Proc. Int’l Conf. on Global Software Engineering 
+(ICGSE’18), Gothenburg, Sweden, May 28-29, 2018, DOI:10.1145/3196369.3196372 
+```
+
 ## 0. Dataset
 The final results of the scripts (i.e., developers' monthly scores per project) are stored [here](https://raw.githubusercontent.com/collab-uniba/personality/master/src/python/export_results/personality.csv) (CSV format). 
 Instead, the entire MySQL database, containing the data scraped from the Apache website, the email archives, and the code metadata obtained from GitHub, is stored [here](https://mega.nz/#!IQ91SAZJ!HXIdsZTT9qay3a-BbFAIJUzaPaktWaSr1pCF-ZwH_tY).
