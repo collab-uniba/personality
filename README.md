@@ -42,7 +42,7 @@ personality:
 
 ## 3. Crawl Apache projects
 * *Setup*:
-Use Python 3 environment and install packages from `src/python/requirements.txt`
+First, install the library [libgit2](https://libgit2.org) on your system. Then, use a Python 3 environment and install the required packages from `src/python/requirements.txt`
 * *Execution*:
 From directory `src/python/apache_crawler` run:
 ```bash
