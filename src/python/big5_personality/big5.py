@@ -135,6 +135,7 @@ def reset_personality_table():
 
 
 def already_parsed_uid_project_month(ids, p_name):
+    res = None
     if tool == 'p_insights':
         res = session.query(func.max(PersonalityProjectMonth.month)).filter(
             and_(or_(PersonalityProjectMonth.dev_uid == _id for _id in ids),
@@ -143,11 +144,14 @@ def already_parsed_uid_project_month(ids, p_name):
         res = session.query(func.max(LiwcScores.month)).filter(
             and_(or_(LiwcScores.dev_uid == _id for _id in ids),
                  LiwcScores.project_name == p_name)).all()
-    month = res[0][0]
+    month = None
+    if res:
+        month = res[0][0]
     return month
 
 
 def already_parsed_uid_project(ids):
+    res = None
     if tool == 'p_insights':
         res = session.query(PersonalityProjectMonth.project_name).filter(
             or_(PersonalityProjectMonth.dev_uid == _id for _id in ids)).order_by(
@@ -164,11 +168,14 @@ def already_parsed_uid_project(ids):
 
 
 def already_parsed_uid():
+    res = None
     if tool == 'p_insights':
         res = session.query(func.max(PersonalityProjectMonth.dev_uid)).all()
     elif tool == 'liwc':
         res = session.query(func.max(LiwcScores.dev_uid)).all()
-    uid = res[0][0]
+    uid = None
+    if res:
+        uid = res[0][0]
     return uid
 
 
@@ -221,9 +228,9 @@ def main():
                 logger.debug(
                     'No emails from %s <%s> to project \'%s\' mailing lists' % (uid, alias_email_addresses, p.name))
             logger.info('Done processing project %s' % p.name)
-            if not check:
+            if liwc_errors:
                 break
-        if not check:
+        if liwc_errors:
                 break
 
 
@@ -234,16 +241,19 @@ if __name__ == '__main__':
     if len(sys.argv) >= 2:
         tool = sys.argv[1]
     else:
-        logger.error('Missing mandatory first param for tool: \'liwc\' or \'pi\' expected')
+        logger.error('Missing mandatory first param for tool: \'liwc\' or \'p_insights\' expected')
         sys.exit(-1)
 
     """ boolean var storing absence of liwc errors """
-    check = True
+    liwc_errors = False
     if len(sys.argv) > 2 and sys.argv[2] == 'reset':
         reset_personality_table()
     try:
         main()
-        if tool == 'liwc' and check:
-            get_profile_liwc(session, logger)
+        if tool == 'liwc':
+            if not liwc_errors:
+                get_profile_liwc(session, logger)
+            else:
+                logger.error('Cannot compute LIWC personality score due to errors')
     except KeyboardInterrupt:
         logger.error('Received Ctrl-C or other break signal. Exiting.')
