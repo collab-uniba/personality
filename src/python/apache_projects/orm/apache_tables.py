@@ -8,8 +8,11 @@ from db.setup import Base
 
 class ApacheDeveloper(Base):
     __tablename__ = 'developers'
-    __table_args__ = {'extend_existing': True}
-    
+    __table_args__ = {
+        'extend_existing': True,
+        'mysql_row_format': 'DYNAMIC'
+    }
+
     id = Column(BigInteger, primary_key=True)
     login = Column(String(255), unique=True, nullable=False)
     name = Column(String(255), nullable=False)
@@ -24,8 +27,11 @@ class ApacheDeveloper(Base):
 
 class ApacheProject(Base):
     __tablename__ = 'projects'
-    __table_args__ = {'extend_existing': True}
-    
+    __table_args__ = {
+        'extend_existing': True,
+        'mysql_row_format': 'DYNAMIC'
+    }
+
     id = Column(Integer, primary_key=True)
     name = Column(String(255), unique=True, nullable=False)
     status = Column(String(24))
@@ -66,8 +72,11 @@ class ApacheProject(Base):
 
 class ProjectCommitter(Base):
     __tablename__ = 'project_committers'
-    __table_args__ = {'extend_existing': True}
-    
+    __table_args__ = {
+        'extend_existing': True,
+        'mysql_row_format': 'DYNAMIC'
+    }
+
     project_id = Column(Integer, primary_key=True)
     developer_id = Column(BigInteger, primary_key=True)
 
@@ -81,8 +90,11 @@ class ProjectCommitter(Base):
 
 class PmcMember(Base):
     __tablename__ = 'pmc_members'
-    __table_args__ = {'extend_existing': True}
-    
+    __table_args__ = {
+        'extend_existing': True,
+        'mysql_row_format': 'DYNAMIC'
+    }
+
     project_id = Column(Integer, primary_key=True)
     developer_id = Column(BigInteger, primary_key=True)
 
