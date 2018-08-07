@@ -244,7 +244,7 @@ if __name__ == '__main__':
         logger.error('Missing mandatory first param for tool: \'liwc\' or \'p_insights\' expected')
         sys.exit(-1)
 
-    """ boolean var storing absence of liwc errors """
+    """ boolean var storing presence of liwc errors """
     liwc_errors = False
     if len(sys.argv) > 2 and sys.argv[2] == 'reset':
         reset_personality_table()
