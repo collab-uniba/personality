@@ -1,9 +1,15 @@
 from sqlalchemy import String, Column, Integer, BigInteger, Float
 from sqlalchemy.dialects.mysql import LONGTEXT
+
 from db.setup import Base
+
 
 class LiwcScores(Base):
     __tablename__ = 'liwc_scores'
+    __table_args__ = {
+        'extend_existing': True,
+        'mysql_row_format': 'DYNAMIC'
+    }
 
     dev_uid = Column(BigInteger, primary_key=True)
     project_name = Column(String(255), primary_key=True)
@@ -102,13 +108,18 @@ class LiwcScores(Base):
     comma = Column(Float)
     time = Column(Float)
     reward = Column(Float)
-    
-    def __init__(self, dev_uid, project_name, month, email_count, wc, sixltr, clout, wps, analytic, tone, dic, authentic, family, feel, money, insight, number, parenth, cogproc, otherp,
-                female, negate, negemo, differ, death, adverb, informal, ipron, percept, quant, exclam, adj, prep, achieve, function, bio, risk, leisure,
-                quote, verb, hear, they, affect, you, work, period, friend, focusfuture, auxverb, male, shehe, semic, relig, compare, pronoun, qmark, certain,
-                assent, we, sad, affiliation, see, anger, home, conj, sexual, ppron, motion, space, filler, anx, focuspresent, netspeak, health, discrep,
-                relativ, colon, nonflu, cause, body, tentat, power, interrog, social, drives, focuspast, article, allpunc, apostro, i, posemo, ingest, dash,
-                swear, comma, time, reward):
+
+    def __init__(self, dev_uid, project_name, month, email_count, wc, sixltr, clout, wps, analytic, tone, dic,
+                 authentic, family, feel, money, insight, number, parenth, cogproc, otherp,
+                 female, negate, negemo, differ, death, adverb, informal, ipron, percept, quant, exclam, adj, prep,
+                 achieve, function, bio, risk, leisure,
+                 quote, verb, hear, they, affect, you, work, period, friend, focusfuture, auxverb, male, shehe, semic,
+                 relig, compare, pronoun, qmark, certain,
+                 assent, we, sad, affiliation, see, anger, home, conj, sexual, ppron, motion, space, filler, anx,
+                 focuspresent, netspeak, health, discrep,
+                 relativ, colon, nonflu, cause, body, tentat, power, interrog, social, drives, focuspast, article,
+                 allpunc, apostro, i, posemo, ingest, dash,
+                 swear, comma, time, reward):
         self.dev_uid = dev_uid
         self.project_name = project_name
         self.month = month
@@ -208,9 +219,12 @@ class LiwcScores(Base):
         self.reward = reward
 
 
-
 class LiwcProjectMonth(Base):
     __tablename__ = 'liwc_personality'
+    __table_args__ = {
+        'extend_existing': True,
+        'mysql_row_format': 'DYNAMIC'
+    }
 
     dev_uid = Column(BigInteger, primary_key=True)
     project_name = Column(String(255), primary_key=True)
