@@ -6,6 +6,10 @@ from db.setup import Base
 
 class PersonalityProjectMonth(Base):
     __tablename__ = 'personality_insights'
+    __table_args__ = {
+        'extend_existing': True,
+        'mysql_row_format': 'DYNAMIC'
+    }
 
     dev_uid = Column(BigInteger, primary_key=True)
     project_name = Column(String(255), primary_key=True)
