@@ -253,6 +253,7 @@ if __name__ == '__main__':
         if tool == 'liwc':
             if not liwc_errors:
                 get_profile_liwc(session, logger)
+                logger.info('Done getting personality scores')
             else:
                 logger.error('Cannot compute LIWC personality score due to errors')
     except KeyboardInterrupt:
