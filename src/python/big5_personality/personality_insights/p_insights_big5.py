@@ -1,4 +1,8 @@
-from personality_insights import big5_personality
+from big5_personality.personality_insights import big5_personality
+
+from watson_developer_cloud import WatsonException, WatsonInvalidArgument
+from requests.exceptions import *
+
 
 def get_profile_insights(logger, email_content):
     try:
