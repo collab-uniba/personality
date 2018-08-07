@@ -5,26 +5,25 @@ from datetime import datetime
 from itertools import groupby
 
 from bs4 import BeautifulSoup as BS4
-from requests.exceptions import *
 from sqlalchemy import exc
 from sqlalchemy import func
 from sqlalchemy import or_, and_
 from sqlalchemy import orm
-from watson_developer_cloud import WatsonException, WatsonInvalidArgument
 
 from apache_projects.orm.apache_tables import *
+from big5_personality.liwc.liwc_big5 import get_profile_liwc
+from big5_personality.liwc.orm.liwc_tables import LiwcScores, LiwcProjectMonth
+from big5_personality.liwc.scores import get_scores
+from big5_personality.personality_insights.orm import PersonalityProjectMonth
+from big5_personality.personality_insights.p_insights_big5 import get_profile_insights
 from commit_analyzer.orm.commit_tables import *
 from commons.aliasing import load_alias_map, get_alias_ids
 from db.setup import SessionWrapper
 from history_analyzer.orm import CommitHistoryDevProject
 from logger import logging_config
 from ml_downloader.orm.mlstats_tables import *
-from personality_insights.orm import PersonalityProjectMonth
-from liwc.orm.liwc_tables import LiwcScores, LiwcProjectMonth
 from unmasking.unmask_aliases import OFFSET
-from personality_insights.p_insights_big5 import get_profile_insights
-from liwc.scores import get_scores
-from liwc.liwc_big5 import get_profile_liwc
+
 
 def clean_up(message_bodies):
     cleansed = list()
@@ -122,7 +121,7 @@ def get_personality_score_by_month(uid, p_name, usr_emails, resume_month):
             check = get_scores(logger, session, uid, p_name, month, '\n\n'.join(clean_emails), len(clean_emails))
             del clean_emails
             if not check:
-                break;
+                break
 
 
 def reset_personality_table():
@@ -232,9 +231,13 @@ if __name__ == '__main__':
     logger = logging_config.get_logger('big5_personality', console_level=logging.DEBUG)
     SessionWrapper.load_config('../db/cfg/setup.yml')
     session = SessionWrapper.new(init=True)
-    #sys.argv[1]: tool (personality insights or liwc)
-    tool = sys.argv[1]
-    #check for liwc error
+    if len(sys.argv) >= 2:
+        tool = sys.argv[1]
+    else:
+        logger.error('Missing mandatory first param for tool: \'liwc\' or \'pi\' expected')
+        sys.exit(-1)
+
+    """ boolean var storing absence of liwc errors """
     check = True
     if len(sys.argv) > 2 and sys.argv[2] == 'reset':
         reset_personality_table()
