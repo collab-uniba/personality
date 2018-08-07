@@ -12,7 +12,7 @@ def load_liwc_config():
     with open(os.path.join(os.getcwd(), 'liwc/cfg/receptiviti.yml'), 'r') as config:
         cfg = yaml.load(config)
 
-    return cfg['liwc']['baseurl'], cfg['liwc']['api_key'], cfg['liwc']['api_secret_key']
+    return cfg['receptiviti']['baseurl'], cfg['receptiviti']['api_key'], cfg['receptiviti']['api_secret_key']
 
 
 def get_content_data(content):
