@@ -117,10 +117,13 @@ $ sh run.sh
 * *Setup*:
 Use Python 3 environment as described in Step 3.
 * *Execution*:
-From directory `src/python/personality_insights` run:
+From directory `src/python/big5_personality` run:
 ```bash
-$ sh run.sh
+$ sh run.sh <tool> [reset]
 ```
+where:
+- tool: tool name, either `liwc` or `p_insights`
+- reset: to empty the db tables containing personality data before new computing
 
 ## 9. Export results
 * *Setup*:
