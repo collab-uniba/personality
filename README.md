@@ -31,13 +31,21 @@ mysql:
     passwd: *******
     db: apache
 ```
-* `src/python/personality_insights/cfg/watson.yaml` - IBM Watson Personality Insights (you will need to register and 
+* `src/python/big5_personality/personality_insights/cfg/watson.yml` - IBM Watson Personality Insights (you will need to register and 
 get your personal username and password)
 ```yaml
 personality:
     username: secret-user
     password: secret-password
     version: 2017-10-13
+```
+* `src/python/big5_personality/liwc/cfg/receptiviti.yaml` - Receptiviti (you will need to register and 
+get your personal api key and api secret key)
+```yaml
+receptiviti:
+    baseurl: https://api-v3.receptiviti.com
+    api_key: *****
+    api_secret_key: *****
 ```
 
 ## 3. Crawl Apache projects
