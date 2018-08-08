@@ -118,10 +118,11 @@ def get_personality_score_by_month(uid, p_name, usr_emails, resume_month):
                 continue
         elif tool == 'liwc':
             logger.info('Getting liwc scores for month %s' % month)
-            check = get_scores(logger, session, uid, p_name, month, '\n\n'.join(clean_emails), len(clean_emails))
+            liwc_errors = get_scores(logger, session, uid, p_name, month, '\n\n'.join(clean_emails), len(clean_emails))
             del clean_emails
-            if not check:
-                break
+            if liwc_errors:
+                return True
+    return False
 
 
 def reset_personality_table():
@@ -220,18 +221,18 @@ def main():
 
             logger.debug('Retrieving emails from %s' % ', '.join(alias_email_addresses))
             all_emails = get_all_emails(alias_email_addresses, project_mailing_lists)
+            liwc_errors = False
             if all_emails:
                 resume_month = already_parsed_uid_project_month(aliases, p.name)
-                get_personality_score_by_month(uid, p.name, all_emails, resume_month)
+                liwc_errors = get_personality_score_by_month(uid, p.name, all_emails, resume_month)
                 del all_emails
             else:
                 logger.debug(
                     'No emails from %s <%s> to project \'%s\' mailing lists' % (uid, alias_email_addresses, p.name))
             logger.info('Done processing project %s' % p.name)
             if liwc_errors:
-                break
-        if liwc_errors:
-                break
+                return True
+    return False
 
 
 if __name__ == '__main__':
@@ -244,12 +245,11 @@ if __name__ == '__main__':
         logger.error('Missing mandatory first param for tool: \'liwc\' or \'p_insights\' expected')
         sys.exit(-1)
 
-    """ boolean var storing presence of liwc errors """
-    liwc_errors = False
     if len(sys.argv) > 2 and sys.argv[2] == 'reset':
         reset_personality_table()
     try:
-        main()
+        """ boolean var storing presence of liwc errors """
+        liwc_errors = main()
         if tool == 'liwc':
             if not liwc_errors:
                 get_profile_liwc(session, logger)
