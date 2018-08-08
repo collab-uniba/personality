@@ -1,9 +1,12 @@
 from .orm.liwc_tables import LiwcScores, LiwcProjectMonth
 
+#References
+#[1] T. Yarkoni, "Personality in 100,000 words: A large-scale analysis of personality and word use among bloggers," Journal of research in
+#personality, vol. 44, no. 3, pp.363-373, 2010
 
 def get_openness(score):
-    # missing: first person, positive feelings, sensory processes, other references, humans, inclusive, sports,
-    # physical states, sleep, grooming
+    #categories indicated by Yarkoni[1] missing in liwc dictionary used: first person, positive feelings, sensory processes, other references,
+    # humans, inclusive, sports, physical states, sleep, grooming
     return (
                 - 0.21 * score.pronoun - 0.16 * score.i - 0.1 * score.we - 0.12 * score.you - 0.13 * score.negate - 0.11 * score.assent
                 + 0.2 * score.article + 0.17 * score.prep - 0.12 * score.affect - 0.15 * score.posemo - 0.09 * score.cogproc
@@ -13,7 +16,7 @@ def get_openness(score):
 
 
 def get_conscientiousness(score):
-    # missing: sensory processes, humans, exclusive, music
+    #categories indicated by Yarkoni[1] missing in liwc dictionary used:  sensory processes, humans, exclusive, music
     return (
                 - 0.17 * score.negate - 0.18 * score.negemo - 0.19 * score.anger - 0.11 * score.sad - 0.11 * score.cogproc - 0.12 * score.cause
                 - 0.13 * score.discrep - 0.1 * score.tentat - 0.1 * score.certain - 0.12 * score.hear + 0.09 * score.time + 0.14 * score.achieve
@@ -21,8 +24,8 @@ def get_conscientiousness(score):
 
 
 def get_extraversion(score):
-    # missing: positive feelings, sensory processes, communication, other references, humans, inclusive, occupation, music,
-    # physical states
+    #categories indicated by Yarkoni[1] missing in liwc dictionary used: positive feelings, sensory processes, communication, other references, humans, inclusive,
+    #  occupation, music, physical states
     return (
                 0.11 * score.we + 0.16 * score.you - 0.12 * score.number + 0.1 * score.posemo - 0.09 * score.cause - 0.11 * score.tentat
                 + 0.1 * score.certain + 0.12 * score.hear + 0.15 * score.social + 0.15 * score.friend + 0.09 * score.family
@@ -31,7 +34,7 @@ def get_extraversion(score):
 
 
 def get_agreeableness(score):
-    # missing: positive feelings, other references, inclusive, music, physical states, sleep
+    #categories indicated by Yarkoni[1] missing in liwc dictionary used: positive feelings, other references, inclusive, music, physical states, sleep
     return (
                 0.11 * score.pronoun + 0.18 * score.we + 0.11 * score.number + 0.18 * score.posemo - 0.15 * score.negemo - 0.23 * score.anger
                 - 0.11 * score.cause + 0.09 * score.see + 0.1 * score.feel + 0.13 * score.social + 0.11 * score.friend + 0.19 * score.family
@@ -40,7 +43,7 @@ def get_agreeableness(score):
 
 
 def get_neuroticism(score):
-    # missing: first person, other references, exclusive, sleep
+    #categories indicated by Yarkoni[1] missing in liwc dictionary used: first person, other references, exclusive, sleep
     return (
                 0.12 * score.i - 0.15 * score.you + 0.11 * score.negate - 0.11 * score.article + 0.16 * score.negemo + 0.17 * score.anx
                 + 0.13 * score.anger + 0.1 * score.sad + 0.13 * score.cogproc + 0.11 * score.cause + 0.13 * score.discrep
@@ -52,7 +55,6 @@ def get_profile_liwc(session, logger):
     logger.info('Getting personality scores')
     for score in scores:
         big5 = {}
-        # controlla i nomi dei 5 tratti
         big5['openness'] = get_openness(score)
         big5['conscientiousness'] = get_conscientiousness(score)
         big5['extraversion'] = get_extraversion(score)
