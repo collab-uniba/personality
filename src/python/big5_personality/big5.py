@@ -100,7 +100,8 @@ def get_all_emails(email_addresses, mailing_lists):
     return res
 
 
-def get_personality_score_by_month(uid, p_name, usr_emails, resume_month):
+def get_score_by_month(uid, p_name, usr_emails, resume_month):
+    liwc_errors = False
     # sort emails by date
     usr_emails.sort(key=lambda e: e.first_date)
     # group by month
@@ -138,8 +139,8 @@ def get_personality_score_by_month(uid, p_name, usr_emails, resume_month):
             liwc_errors = get_scores(logger, session, uid, p_name, month, '\n\n'.join(clean_emails), len(clean_emails))
             del clean_emails
             if liwc_errors:
-                return True
-    return False
+                break
+    return liwc_errors
 
 
 def reset_personality_table():
@@ -241,7 +242,7 @@ def main():
             liwc_errors = False
             if all_emails:
                 resume_month = already_parsed_uid_project_month(aliases, p.name)
-                liwc_errors = get_personality_score_by_month(uid, p.name, all_emails, resume_month)
+                liwc_errors = get_score_by_month(uid, p.name, all_emails, resume_month)
                 del all_emails
             else:
                 logger.debug(
