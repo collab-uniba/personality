@@ -106,16 +106,18 @@ def import_result(session, result, uid, p_name, month, email_count):
 
 
 def get_scores(logger, session, uid, p_name, month, content, email_count):
-    baseurl, apikey, apisecret = load_liwc_config()
-    content_data = get_content_data(content)
-    content_api_url = get_content_api_url(baseurl)
-    auth_headers = get_auth_headers(apikey, apisecret)
+    if content != '':
+        baseurl, apikey, apisecret = load_liwc_config()
+        content_data = get_content_data(content)
+        content_api_url = get_content_api_url(baseurl)
+        auth_headers = get_auth_headers(apikey, apisecret)
 
-    response = post(content_api_url, json=content_data, headers=auth_headers)
-    if response.status_code == 200:
-        response_json = json.loads(response.content)
-        import_result(session, response_json["liwc_scores"], uid, p_name, month, email_count)
-        return False;
-    else:
-        logger.error('Connection error, retrying')
-        return True;
+        response = post(content_api_url, json=content_data, headers=auth_headers)
+        if response.status_code == 200:
+            response_json = json.loads(response.content)
+            import_result(session, response_json["liwc_scores"], uid, p_name, month, email_count)
+            return False;
+        else:
+            logger.error('Connection error, retrying')
+            return True;
+    return False
