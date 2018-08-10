@@ -117,7 +117,10 @@ def get_scores(logger, session, uid, p_name, month, content, email_count):
         if response.status_code == 200:
             response_json = json.loads(response.content)
             import_result(session, response_json["liwc_scores"], uid, p_name, month, email_count)
-        else:
-            logger.error('Connection error, retrying')
-            errors = True;
+        elif response.status_code == 400:
+            logger.error('Cannot compute LIWC scores due to bad request')
+            errors = True
+        elif response.status_code == 401:
+            logger.error('Cannot compute LIWC scores due to unauthorized request')
+            errors = True
     return errors
