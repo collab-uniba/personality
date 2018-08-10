@@ -50,22 +50,14 @@ def clean_up(message_bodies):
         # clean_message_body = clean_message_body.encode('utf-8').strip()
 
         split_message = clean_message_body.split()
-        words_number = words_number + len(split_message)
+        words_number += len(split_message)
         if words_number > words_limit:
-            split_message = cutoff(split_message, words_number-words_limit)
-            clean_message_body = ''
-            for i in range (0, len(split_message)):
-                clean_message_body = clean_message_body + ' ' + split_message[i]
+            split_message = split_message[:(words_limit - words_number)]
+            clean_message_body = ' '.join(split_message)
             cleansed.append(clean_message_body.strip())
             break
         cleansed.append(clean_message_body.strip())
     return cleansed
-
-
-def cutoff(message, nwords_to_remove):
-    for i in range (0, nwords_to_remove):
-        del message[len(message)-1]
-    return message
 
 
 def get_alias_email_addresses(alias_ids):
