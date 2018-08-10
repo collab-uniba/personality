@@ -41,10 +41,10 @@ def clean_up(message_bodies):
         clean_message_body = re.sub(r'\n[\t\s]*\n+', '', clean_message_body, flags=re.MULTILINE)
         clean_message_body = re.sub(r'({+|}+|\++|_+|=+|-+|\*|\\+|/+|@+|\[+|\]+|:+|<+|>+|\(+|\)+)', '',
                                     clean_message_body, flags=re.MULTILINE)
-        clean_message_body = re.sub(r'On .* wrote:.*', '', clean_message_body, flags=re.MULTILINE)
+        clean_message_body = re.sub(r'On\s(.[^\sw]*\s)*wrote', '', clean_message_body, flags=re.MULTILINE)
         clean_message_body = re.sub(r'[\n+]Sent from', '', clean_message_body, flags=re.MULTILINE)
         clean_message_body = re.sub(r'https?:\/\/\S*', '', clean_message_body, flags=re.MULTILINE)
-        clean_message_body = re.sub(r'[\w\.-]+ @ [\w\.-]+', '', clean_message_body, flags=re.MULTILINE)
+    clean_message_body = re.sub(r'[\w\.-]+ @ [\w\.-]+', '', clean_message_body, flags=re.MULTILINE)
         # clean_message_body = clean_message_body.encode('utf-8').strip()
 
         cleansed.append(clean_message_body.strip())
