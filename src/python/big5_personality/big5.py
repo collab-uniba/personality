@@ -5,49 +5,30 @@ from datetime import datetime
 from itertools import groupby
 
 from bs4 import BeautifulSoup as BS4
-from requests.exceptions import *
 from sqlalchemy import exc
 from sqlalchemy import func
 from sqlalchemy import or_, and_
 from sqlalchemy import orm
-from watson_developer_cloud import WatsonException, WatsonInvalidArgument
 
 from apache_projects.orm.apache_tables import *
+from big5_personality.liwc.liwc_big5 import get_profile_liwc
+from big5_personality.liwc.orm.liwc_tables import LiwcScores, LiwcProjectMonth
+from big5_personality.liwc.scores import get_scores
+from big5_personality.personality_insights.orm import PersonalityProjectMonth
+from big5_personality.personality_insights.p_insights_big5 import get_profile_insights
 from commit_analyzer.orm.commit_tables import *
 from commons.aliasing import load_alias_map, get_alias_ids
 from db.setup import SessionWrapper
 from history_analyzer.orm import CommitHistoryDevProject
 from logger import logging_config
 from ml_downloader.orm.mlstats_tables import *
-from personality_insights import big5_personality
-from personality_insights.orm import PersonalityProjectMonth
 from unmasking.unmask_aliases import OFFSET
-
-
-def get_profile(email_content):
-    try:
-        try:
-            json_profile = big5_personality.profile(email_content, content_type='text/html',  # text/plain
-                                                    raw_scores=True,
-                                                    consumption_preferences=True)
-        except (ConnectionError, ConnectTimeout):
-            logger.error('Connection error, retrying')
-            try:
-                json_profile = big5_personality.profile(email_content, content_type='text/html',  # text/plain
-                                                        raw_scores=True,
-                                                        consumption_preferences=True)
-            except (ConnectionError, ConnectTimeout):
-                logger.error('Connection error on retry, skipping')
-                json_profile = ''
-    except (WatsonException, WatsonInvalidArgument) as e:
-        logger.error(e)
-        json_profile = ''
-
-    return json_profile
 
 
 def clean_up(message_bodies):
     cleansed = list()
+    words_number = 0
+    words_limit = 10000
     for message_body in message_bodies:
         try:
             soup = BS4(message_body, 'html.parser')
@@ -62,12 +43,19 @@ def clean_up(message_bodies):
         clean_message_body = re.sub(r'\n[\t\s]*\n+', '', clean_message_body, flags=re.MULTILINE)
         clean_message_body = re.sub(r'({+|}+|\++|_+|=+|-+|\*|\\+|/+|@+|\[+|\]+|:+|<+|>+|\(+|\)+)', '',
                                     clean_message_body, flags=re.MULTILINE)
-        clean_message_body = re.sub(r'On .* wrote:.*', '', clean_message_body, flags=re.MULTILINE)
+        clean_message_body = re.sub(r'On\s(.[^\sw]*\s)*wrote', '', clean_message_body, flags=re.MULTILINE)
         clean_message_body = re.sub(r'[\n+]Sent from', '', clean_message_body, flags=re.MULTILINE)
         clean_message_body = re.sub(r'https?:\/\/\S*', '', clean_message_body, flags=re.MULTILINE)
         clean_message_body = re.sub(r'[\w\.-]+ @ [\w\.-]+', '', clean_message_body, flags=re.MULTILINE)
         # clean_message_body = clean_message_body.encode('utf-8').strip()
 
+        split_message = clean_message_body.split()
+        words_number += len(split_message)
+        if words_number > words_limit:
+            split_message = split_message[:(words_limit - words_number)]
+            clean_message_body = ' '.join(split_message)
+            cleansed.append(clean_message_body.strip())
+            break
         cleansed.append(clean_message_body.strip())
     return cleansed
 
@@ -104,7 +92,8 @@ def get_all_emails(email_addresses, mailing_lists):
     return res
 
 
-def get_personality_score_by_month(uid, p_name, usr_emails, resume_month):
+def get_score_by_month(uid, p_name, usr_emails, resume_month):
+    liwc_errors = False
     # sort emails by date
     usr_emails.sort(key=lambda e: e.first_date)
     # group by month
@@ -113,48 +102,75 @@ def get_personality_score_by_month(uid, p_name, usr_emails, resume_month):
             continue
         logger.debug('Cleaning up email bodies')
         clean_emails = clean_up([x.message_body for x in eml_list])
-        logger.info('Getting personality scores for month %s' % month)
-        json_score = get_profile('\n\n'.join(clean_emails))
-        del clean_emails
-        # store in table; keys: dev_uid, project_name, month
-        if json_score is not None and json_score != '':
-            word_count = json_score['word_count']
-        else:
-            word_count = 0
-        v = PersonalityProjectMonth(dev_uid=uid, project_name=p_name, month=month,
-                                    email_count=len(clean_emails), word_count=word_count,
-                                    scores=json_score)
-        logger.debug('Adding %s' % v)
-        session.add(v)
-        try:
-            session.commit()
-            del v
-            del json_score
-        except exc.IntegrityError:
-            logger.warning('Duplicate entry for %s, rolling back session and keep going', v)
-            session.rollback()
-        except Exception as e:
-            logger.error('Unknown error storing personality scores for %s\n\n' % v, e)
-            continue
+        if tool == 'p_insights':
+            logger.info('Getting personality scores for month %s' % month)
+            json_score = get_profile_insights(logger, '\n\n'.join(clean_emails))
+            # store in table; keys: dev_uid, project_name, month
+            if json_score is not None and json_score != '':
+                word_count = json_score['word_count']
+            else:
+                word_count = 0
+            v = PersonalityProjectMonth(dev_uid=uid, project_name=p_name, month=month,
+                                        email_count=len(clean_emails), word_count=word_count,
+                                        scores=json_score)
+            logger.debug('Adding %s' % v)
+            session.add(v)
+            try:
+                session.commit()
+                del v
+                del json_score
+                del clean_emails
+            except exc.IntegrityError:
+                logger.warning('Duplicate entry for %s, rolling back session and keep going', v)
+                session.rollback()
+            except Exception as e:
+                logger.error('Unknown error storing personality scores for %s\n\n' % v, e)
+                continue
+        elif tool == 'liwc':
+            logger.info('Getting liwc scores for month %s' % month)
+            liwc_errors = get_scores(logger, session, uid, p_name, month, '\n\n'.join(clean_emails), len(clean_emails))
+            del clean_emails
+            if liwc_errors:
+                break
+    return liwc_errors
 
 
 def reset_personality_table():
-    session.query(PersonalityProjectMonth).delete()
+    if tool == 'p_insights':
+        session.query(PersonalityProjectMonth).delete()
+    elif tool == 'liwc':
+        session.query(LiwcScores).delete()
+        session.query(LiwcProjectMonth).delete()
     session.commit()
+    logger.info('Done resetting table %s' % tool)
 
 
 def already_parsed_uid_project_month(ids, p_name):
-    res = session.query(func.max(PersonalityProjectMonth.month)).filter(
-        and_(or_(PersonalityProjectMonth.dev_uid == _id for _id in ids),
-             PersonalityProjectMonth.project_name == p_name)).all()
-    month = res[0][0]
+    res = None
+    if tool == 'p_insights':
+        res = session.query(func.max(PersonalityProjectMonth.month)).filter(
+            and_(or_(PersonalityProjectMonth.dev_uid == _id for _id in ids),
+                 PersonalityProjectMonth.project_name == p_name)).all()
+    elif tool == 'liwc':
+        res = session.query(func.max(LiwcScores.month)).filter(
+            and_(or_(LiwcScores.dev_uid == _id for _id in ids),
+                 LiwcScores.project_name == p_name)).all()
+    month = None
+    if res:
+        month = res[0][0]
     return month
 
 
 def already_parsed_uid_project(ids):
-    res = session.query(PersonalityProjectMonth.project_name).filter(
-        or_(PersonalityProjectMonth.dev_uid == _id for _id in ids)).order_by(
-        PersonalityProjectMonth.project_name.desc()).distinct().all()
+    res = None
+    if tool == 'p_insights':
+        res = session.query(PersonalityProjectMonth.project_name).filter(
+            or_(PersonalityProjectMonth.dev_uid == _id for _id in ids)).order_by(
+                PersonalityProjectMonth.project_name.desc()).distinct().all()
+    elif tool == 'liwc':
+        res = session.query(LiwcScores.project_name).filter(
+            or_(LiwcScores.dev_uid == _id for _id in ids)).order_by(
+                LiwcScores.project_name.desc()).distinct().all()
     if res:
         p_name = res[0][0]
     else:
@@ -163,8 +179,14 @@ def already_parsed_uid_project(ids):
 
 
 def already_parsed_uid():
-    res = session.query(func.max(PersonalityProjectMonth.dev_uid)).all()
-    uid = res[0][0]
+    res = None
+    if tool == 'p_insights':
+        res = session.query(func.max(PersonalityProjectMonth.dev_uid)).all()
+    elif tool == 'liwc':
+        res = session.query(func.max(LiwcScores.dev_uid)).all()
+    uid = None
+    if res:
+        uid = res[0][0]
     return uid
 
 
@@ -209,24 +231,41 @@ def main():
 
             logger.debug('Retrieving emails from %s' % ', '.join(alias_email_addresses))
             all_emails = get_all_emails(alias_email_addresses, project_mailing_lists)
+            liwc_errors = False
             if all_emails:
                 resume_month = already_parsed_uid_project_month(aliases, p.name)
-                get_personality_score_by_month(uid, p.name, all_emails, resume_month)
+                liwc_errors = get_score_by_month(uid, p.name, all_emails, resume_month)
                 del all_emails
             else:
                 logger.debug(
                     'No emails from %s <%s> to project \'%s\' mailing lists' % (uid, alias_email_addresses, p.name))
-
             logger.info('Done processing project %s' % p.name)
+            if liwc_errors:
+                return True
+    return False
 
 
 if __name__ == '__main__':
-    logger = logging_config.get_logger('personality_watson', console_level=logging.DEBUG)
+    logger = logging_config.get_logger('big5_personality', console_level=logging.DEBUG)
     SessionWrapper.load_config('../db/cfg/setup.yml')
     session = SessionWrapper.new(init=True)
-    if len(sys.argv) > 1 and sys.argv[1] == 'reset':
+
+    if len(sys.argv) >= 2:
+        tool = sys.argv[1]
+    else:
+        logger.error('Missing mandatory first param for tool: \'liwc\' or \'p_insights\' expected')
+        sys.exit(-1)
+
+    if len(sys.argv) > 2 and sys.argv[2] == 'reset':
         reset_personality_table()
     try:
-        main()
+        """ boolean var storing presence of liwc errors """
+        liwc_errors = main()
+        if tool == 'liwc':
+            if not liwc_errors:
+                get_profile_liwc(session, logger)
+                logger.info('Done getting personality scores')
+            else:
+                logger.error('Cannot compute LIWC personality score due to errors')
     except KeyboardInterrupt:
         logger.error('Received Ctrl-C or other break signal. Exiting.')
