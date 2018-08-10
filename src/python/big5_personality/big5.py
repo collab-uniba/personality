@@ -27,6 +27,8 @@ from unmasking.unmask_aliases import OFFSET
 
 def clean_up(message_bodies):
     cleansed = list()
+    words_number = 0
+    words_limit = 10000
     for message_body in message_bodies:
         try:
             soup = BS4(message_body, 'html.parser')
@@ -44,11 +46,26 @@ def clean_up(message_bodies):
         clean_message_body = re.sub(r'On\s(.[^\sw]*\s)*wrote', '', clean_message_body, flags=re.MULTILINE)
         clean_message_body = re.sub(r'[\n+]Sent from', '', clean_message_body, flags=re.MULTILINE)
         clean_message_body = re.sub(r'https?:\/\/\S*', '', clean_message_body, flags=re.MULTILINE)
-    clean_message_body = re.sub(r'[\w\.-]+ @ [\w\.-]+', '', clean_message_body, flags=re.MULTILINE)
+        clean_message_body = re.sub(r'[\w\.-]+ @ [\w\.-]+', '', clean_message_body, flags=re.MULTILINE)
         # clean_message_body = clean_message_body.encode('utf-8').strip()
 
+        split_message = clean_message_body.split()
+        words_number = words_number + len(split_message)
+        if words_number > words_limit:
+            split_message = cutoff(split_message, words_number-words_limit)
+            clean_message_body = ''
+            for i in range (0, len(split_message)):
+                clean_message_body = clean_message_body + ' ' + split_message[i]
+            cleansed.append(clean_message_body.strip())
+            break
         cleansed.append(clean_message_body.strip())
     return cleansed
+
+
+def cutoff(message, nwords_to_remove):
+    for i in range (0, nwords_to_remove):
+        del message[len(message)-1]
+    return message
 
 
 def get_alias_email_addresses(alias_ids):
@@ -239,6 +256,7 @@ if __name__ == '__main__':
     logger = logging_config.get_logger('big5_personality', console_level=logging.DEBUG)
     SessionWrapper.load_config('../db/cfg/setup.yml')
     session = SessionWrapper.new(init=True)
+
     if len(sys.argv) >= 2:
         tool = sys.argv[1]
     else:
