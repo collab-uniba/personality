@@ -10,7 +10,7 @@ from commons.csv_utils import CsvWriter
 from db import SessionWrapper
 from history_analyzer.orm import CommitHistoryDevProject
 from logger import logging_config
-from personality_insights.orm import PersonalityProjectMonth
+from big5_personality.personality_insights.orm import PersonalityProjectMonth
 
 
 def merge_result_by_alias(res):
