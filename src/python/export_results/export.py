@@ -240,7 +240,7 @@ if __name__ == '__main__':
     session = SessionWrapper.new(init=True)
     alias_map = load_alias_map('../unmasking/idm/dict/alias_map.dict')
 
-    if len(sys.argv) == 2:
+    if len(sys.argv) >= 2:
         tool = sys.argv[1]
     elif len(sys.argv) < 2:
         logger.error('Missing mandatory first param for tool: \'liwc\' or \'p_insights\' expected')
