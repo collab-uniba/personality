@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 export PYTHONPATH=$PYTHONPATH:../:../apache_projects:../history_analyzer
-python export.py
+# mandatory param: tool name, either liwc or p_insights
+python export.py $@

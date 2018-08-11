@@ -131,6 +131,9 @@ Use Python 3 environment as described in Step 3.
 * *Execution*:
 From directory `src/python/export_results` run:
 ```bash
-$ sh run.sh
+$ sh run.sh <tool>
 ```
-Results are stored in the file `personality.csv`.
+where:
+- tool: tool name, either `liwc` or `p_insights`
+
+Results are stored in the file `personality_liwc.csv` or `p_insights.csv`.
