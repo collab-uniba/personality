@@ -1,6 +1,6 @@
 import json
 import logging
-
+import sys
 from dateutil.relativedelta import relativedelta
 
 from apache_projects.orm import ApacheProject
@@ -11,6 +11,7 @@ from db import SessionWrapper
 from history_analyzer.orm import CommitHistoryDevProject
 from logger import logging_config
 from big5_personality.personality_insights.orm import PersonalityProjectMonth
+from big5_personality.liwc.orm.liwc_tables import LiwcProjectMonth
 
 
 def merge_result_by_alias(res):
@@ -104,17 +105,27 @@ def merge_result_by_alias(res):
 
 def save_personality_results():
     global rows, r, r_dict
-    personality_filename = 'personality.csv'
+    personality_filename = 'personality_' + tool + '.csv'
+
     logger.info('Exporting personality data to file %s' % personality_filename)
     personality_header = ['uid', 'project', 'month', 'email_count', 'word_count',
-                          'opennes', 'agreeableness', 'neuroticism', 'extraversion', 'conscientiousness',
-                          'opennes_percentile', 'agreeableness_percentile', 'neuroticism_percentile',
-                          'extraversion_percentile', 'conscientiousness_percentile']
+                          'openness', 'agreeableness', 'neuroticism', 'extraversion', 'conscientiousness']
+    if tool == 'p_insights':
+        personality_header.extend(['openness_percentile', 'agreeableness_percentile', 'neuroticism_percentile',
+                                   'extraversion_percentile', 'conscientiousness_percentile'])
+
     personality_writer = CsvWriter(personality_filename, personality_header, 'w')
-    rows = session.query(PersonalityProjectMonth).order_by(PersonalityProjectMonth.dev_uid,
-                                                           PersonalityProjectMonth.project_name,
-                                                           PersonalityProjectMonth.month,
-                                                           PersonalityProjectMonth.word_count).all()
+    if tool == 'p_insights':
+        rows = session.query(PersonalityProjectMonth).order_by(PersonalityProjectMonth.dev_uid,
+                                                               PersonalityProjectMonth.project_name,
+                                                               PersonalityProjectMonth.month,
+                                                               PersonalityProjectMonth.word_count).all()
+    elif tool == 'liwc':
+        rows = session.query(LiwcProjectMonth).order_by(LiwcProjectMonth.dev_uid,
+                                                        LiwcProjectMonth.project_name,
+                                                        LiwcProjectMonth.month,
+                                                        LiwcProjectMonth.word_count).all()
+
     if rows:
         for r in rows:
             r_dict = dict()
@@ -128,16 +139,23 @@ def save_personality_results():
             except json.decoder.JSONDecodeError:
                 logger.debug('Empty month % s for developer %s on project %s' % (r.month, r.dev_uid, r.project_name))
                 continue
-            r_dict['opennes'] = scores["personality"][0]['raw_score']
-            r_dict['agreeableness'] = scores["personality"][3]['raw_score']
-            r_dict['neuroticism'] = scores["personality"][4]['raw_score']
-            r_dict['extraversion'] = scores["personality"][2]['raw_score']
-            r_dict['conscientiousness'] = scores["personality"][1]['raw_score']
-            r_dict['opennes_percentile'] = scores["personality"][0]['percentile']
-            r_dict['agreeableness_percentile'] = scores["personality"][3]['percentile']
-            r_dict['neuroticism_percentile'] = scores["personality"][4]['percentile']
-            r_dict['extraversion_percentile'] = scores["personality"][2]['percentile']
-            r_dict['conscientiousness_percentile'] = scores["personality"][1]['percentile']
+            if tool == 'p_insights':
+                r_dict['openness'] = scores["personality"][0]['raw_score']
+                r_dict['agreeableness'] = scores["personality"][3]['raw_score']
+                r_dict['neuroticism'] = scores["personality"][4]['raw_score']
+                r_dict['extraversion'] = scores["personality"][2]['raw_score']
+                r_dict['conscientiousness'] = scores["personality"][1]['raw_score']
+                r_dict['opennes_percentile'] = scores["personality"][0]['percentile']
+                r_dict['agreeableness_percentile'] = scores["personality"][3]['percentile']
+                r_dict['neuroticism_percentile'] = scores["personality"][4]['percentile']
+                r_dict['extraversion_percentile'] = scores["personality"][2]['percentile']
+                r_dict['conscientiousness_percentile'] = scores["personality"][1]['percentile']
+            elif tool == 'liwc':
+                r_dict['openness'] = scores['openness']
+                r_dict['agreeableness'] = scores['agreeableness']
+                r_dict['neuroticism'] = scores['neuroticism']
+                r_dict['extraversion'] = scores['extraversion']
+                r_dict['conscientiousness'] = scores['conscientiousness']
             personality_writer.writerow(r_dict)
 
     personality_writer.close()
@@ -221,6 +239,12 @@ if __name__ == '__main__':
     SessionWrapper.load_config('../db/cfg/setup.yml')
     session = SessionWrapper.new(init=True)
     alias_map = load_alias_map('../unmasking/idm/dict/alias_map.dict')
+
+    if len(sys.argv) >= 2:
+        tool = sys.argv[1]
+    else:
+        logger.error('Missing mandatory first param for tool: \'liwc\' or \'p_insights\' expected')
+        sys.exit(-1)
 
     save_personality_results()
     save_commit_results()
