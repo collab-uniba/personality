@@ -136,4 +136,4 @@ $ sh run.sh <tool>
 where:
 - tool: tool name, either `liwc` or `p_insights`
 
-Results are stored in the file `personality_liwc.csv` or `p_insights.csv`.
+Results are stored in files `personality_liwc.csv` and `personality_p_insights.csv`.
