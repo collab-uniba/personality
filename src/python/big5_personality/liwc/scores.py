@@ -107,7 +107,7 @@ def import_result(session, result, uid, p_name, month, email_count):
 
 def get_scores(logger, session, uid, p_name, month, content, email_count):
     errors = False
-    if content != '':
+    if len(content.split()) != 0:
         baseurl, apikey, apisecret = load_liwc_config()
         content_data = get_content_data(content)
         content_api_url = get_content_api_url(baseurl)
