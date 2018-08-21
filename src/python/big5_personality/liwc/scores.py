@@ -124,6 +124,6 @@ def get_scores(logger, session, uid, p_name, month, content, email_count):
             logger.error('Cannot compute LIWC scores due to unauthorized request. Error code: 401')
             errors = True
         else:
-            logger.error('Cannot compute LIWC scores.Error code: %s' % response.status_code)
+            logger.error('Cannot compute LIWC scores. Error code: %s' % response.status_code)
             errors = True
     return errors
