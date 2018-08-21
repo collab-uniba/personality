@@ -24,8 +24,18 @@ from logger import logging_config
 from ml_downloader.orm.mlstats_tables import *
 from unmasking.unmask_aliases import OFFSET
 
+from rpy2.robjects.packages import importr
+import rpy2.robjects as robjects
 
-def clean_up(message_bodies):
+
+def training_nlon():
+    nlon = importr('NLoN')
+    robjects.r['load']("training_data.rda")
+
+    return nlon, nlon.NLoNModel(robjects.r['text'], robjects.r['rater'])
+
+
+def clean_up(message_bodies, nlon, nlon_model):
     cleansed = list()
     words_number = 0
     words_limit = 10000
@@ -48,6 +58,17 @@ def clean_up(message_bodies):
         clean_message_body = re.sub(r'https?:\/\/\S*', '', clean_message_body, flags=re.MULTILINE)
         clean_message_body = re.sub(r'[\w\.-]+ @ [\w\.-]+', '', clean_message_body, flags=re.MULTILINE)
         # clean_message_body = clean_message_body.encode('utf-8').strip()
+
+        message_by_lines = clean_message_body.splitlines()
+        list_length = len(message_by_lines)
+        index = 0
+        for count in range(0, list_length):
+            text = robjects.StrVector([message_by_lines[index]])
+            if nlon.NLoNPredict(nlon_model, text)[0] == 'Not':
+                del message_by_lines[index]
+            else:
+                index = index + 1
+        clean_message_body = '\n'.join(message_by_lines)
 
         split_message = clean_message_body.split()
         words_number += len(split_message)
@@ -92,7 +113,7 @@ def get_all_emails(email_addresses, mailing_lists):
     return res
 
 
-def get_score_by_month(uid, p_name, usr_emails, resume_month):
+def get_score_by_month(uid, p_name, usr_emails, resume_month, nlon, nlon_model):
     liwc_errors = False
     # sort emails by date
     usr_emails.sort(key=lambda e: e.first_date)
@@ -101,7 +122,7 @@ def get_score_by_month(uid, p_name, usr_emails, resume_month):
         if resume_month is not None and month <= resume_month:
             continue
         logger.debug('Cleaning up email bodies')
-        clean_emails = clean_up([x.message_body for x in eml_list])
+        clean_emails = clean_up([x.message_body for x in eml_list], nlon, nlon_model)
         if tool == 'p_insights':
             logger.info('Getting personality scores for month %s' % month)
             json_score = get_profile_insights(logger, '\n\n'.join(clean_emails))
@@ -191,6 +212,9 @@ def already_parsed_uid():
 
 
 def main():
+    logger.info('Training nlon model')
+    nlon, nlon_model = training_nlon()
+
     alias_map = load_alias_map('../unmasking/idm/dict/alias_map.dict')
 
     projects = sorted(session.query(ApacheProject.name, ApacheProject.dev_ml_url, ApacheProject.user_ml_url). \
@@ -234,7 +258,7 @@ def main():
             liwc_errors = False
             if all_emails:
                 resume_month = already_parsed_uid_project_month(aliases, p.name)
-                liwc_errors = get_score_by_month(uid, p.name, all_emails, resume_month)
+                liwc_errors = get_score_by_month(uid, p.name, all_emails, resume_month, nlon, nlon_model)
                 del all_emails
             else:
                 logger.debug(

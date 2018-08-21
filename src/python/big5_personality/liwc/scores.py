@@ -107,7 +107,7 @@ def import_result(session, result, uid, p_name, month, email_count):
 
 def get_scores(logger, session, uid, p_name, month, content, email_count):
     errors = False
-    if content != '':
+    if len(content.split()) != 0:
         baseurl, apikey, apisecret = load_liwc_config()
         content_data = get_content_data(content)
         content_api_url = get_content_api_url(baseurl)
@@ -122,5 +122,8 @@ def get_scores(logger, session, uid, p_name, month, content, email_count):
             errors = True
         elif response.status_code == 401:
             logger.error('Cannot compute LIWC scores due to unauthorized request. Error code: 401')
+            errors = True
+        else:
+            logger.error('Cannot compute LIWC scores. Error code: %s' % response.status_code)
             errors = True
     return errors

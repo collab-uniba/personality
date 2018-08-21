@@ -115,7 +115,8 @@ $ sh run.sh
 
 ## 8. Compute developers' Big-Five personality scores per month from emails (for Git projects only)
 * *Setup*:
-Use Python 3 environment as described in Step 3.
+    1. Install NLoN package as described [here](https://github.com/M3SOulu/NLoN)
+    2. Use Python 3 environment as described in Step 3.
 * *Execution*:
 From directory `src/python/big5_personality` run:
 ```bash
