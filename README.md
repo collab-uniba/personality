@@ -104,16 +104,27 @@ From directory `src/python/unmasking` run:
 $ sh run.sh
 ```
 
-## 7. Build developer commit history (for Git projects only)
+## 7. Get github users location
+* *Setup*:
+Use Python 3 environment as described in Step 2.
+* *Execution*:
+From directory `src/python/github_users_location` run:
+```bash
+$ sh run.sh [reset]
+```
+where:
+- reset: to empty db table containing github users location
+
+## 8. Build developer commit history (for Git projects only)
 * *Setup*:
 Use Python 3 environment as described in Step 3.
 * *Execution*:
 From directory `src/python/commit_analyzer` run:
 ```bash
-$ sh run.sh
+$ sh run.sh 
 ```
 
-## 8. Compute developers' Big-Five personality scores per month from emails (for Git projects only)
+## 9. Compute developers' Big-Five personality scores per month from emails (for Git projects only)
 * *Setup*:
     1. Install NLoN package as described [here](https://github.com/M3SOulu/NLoN)
     2. Use Python 3 environment as described in Step 3.
@@ -126,7 +137,7 @@ where:
 - tool: tool name, either `liwc` or `p_insights`
 - reset: to empty the db tables containing personality data before new computing
 
-## 9. Export results
+## 10. Export results
 * *Setup*:
 Use Python 3 environment as described in Step 3.
 * *Execution*:
