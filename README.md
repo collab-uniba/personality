@@ -106,7 +106,13 @@ $ sh run.sh
 
 ## 7. Get developers' location from GitHub
 * *Setup*:
-Use Python 3 environment as described in Step 2.
+    1. In MySql command line enter following instruction:
+        ```bash
+        set character set utf8mb4; 
+        ```
+    2. Use Python 3 environment as described in Step 3. 
+    3. Add a new file `github-api-tokens.txt`
+and enter a GitHub API access token
 * *Execution*:
 From directory `src/python/github_users_location` run:
 ```bash
