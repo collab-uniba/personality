@@ -14,9 +14,13 @@ class UsersLocation(Base):
     location = Column(String(255))
     bio = Column(String(255, collation='utf8mb4_unicode_ci'))
     company = Column(String(255))
+    name = Column(String(255))
+    email = Column(String(255))
 
-    def __init__(self, username, location, bio, company):
+    def __init__(self, username, location, bio, company, name, email):
         self.username = username
         self.location = location
         self.bio = bio
         self.company = company
+        self.name = name
+        self.email = email

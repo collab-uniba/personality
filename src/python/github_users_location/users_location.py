@@ -26,7 +26,9 @@ def save_user_info(username):
         user_info = UsersLocation(username=username,
                                   location=github_user_profile.location,
                                   bio=github_user_profile.bio,
-                                  company=github_user_profile.company)
+                                  company=github_user_profile.company,
+                                  name=github_user_profile.name,
+                                  email=github_user_profile.email)
 
         session.add(user_info)
         session.commit()
