@@ -1,5 +1,4 @@
 from sqlalchemy import String, Column
-from sqlalchemy.dialects.mysql import LONGTEXT
 
 from db.setup import Base
 
