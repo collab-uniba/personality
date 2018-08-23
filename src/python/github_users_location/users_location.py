@@ -1,15 +1,13 @@
 import logging
 import sys
-from db.setup import SessionWrapper
 
 from github import Github
 from github.GithubException import *
-
 from sqlalchemy.exc import IntegrityError
 
-from logger import logging_config
-
+from db.setup import SessionWrapper
 from github_users_location.orm.users_location_table import UsersLocation
+from logger import logging_config
 from pr_downloader.orm.github_tables import PullRequest
 
 
@@ -26,9 +24,9 @@ def save_user_info(username):
     try:
         github_user_profile = g.get_user(username)
         user_info = UsersLocation(username=username,
-                                location=github_user_profile.location,
-                                bio=github_user_profile.bio,
-                                company=github_user_profile.company)
+                                  location=github_user_profile.location,
+                                  bio=github_user_profile.bio,
+                                  company=github_user_profile.company)
 
         session.add(user_info)
         session.commit()

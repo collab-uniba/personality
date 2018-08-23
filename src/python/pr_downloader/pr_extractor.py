@@ -109,7 +109,6 @@ class PrAndCommentExtractor(BaseGitHubThreadedExtractor):
 
         return metadata
 
-
     def fetch_prs_comments(self, slug):
         pid = current_process().pid
         pr_list = list()
