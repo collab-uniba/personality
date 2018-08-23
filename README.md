@@ -104,7 +104,7 @@ From directory `src/python/unmasking` run:
 $ sh run.sh
 ```
 
-## 7. Get github users location
+## 7. Get developers' location from GitHub
 * *Setup*:
 Use Python 3 environment as described in Step 2.
 * *Execution*:
@@ -124,7 +124,7 @@ From directory `src/python/commit_analyzer` run:
 $ sh run.sh 
 ```
 
-## 9. Compute developers' Big-Five personality scores per month from emails (for Git projects only)
+## 9. Compute developers' Big Five traits scores per month from emails (for Git projects only)
 * *Setup*:
     1. Install NLoN package as described [here](https://github.com/M3SOulu/NLoN)
     2. Use Python 3 environment as described in Step 3.
