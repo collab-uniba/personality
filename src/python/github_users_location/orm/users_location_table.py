@@ -1,4 +1,4 @@
-from sqlalchemy import String, Column
+from sqlalchemy import String, Column, BigInteger
 
 from db.setup import Base
 
@@ -10,7 +10,8 @@ class UsersLocation(Base):
         'mysql_row_format': 'DYNAMIC'
     }
 
-    username = Column(String(255), primary_key=True)
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    username = Column(String(255), unique = True)
     location = Column(String(255))
     bio = Column(String(255, collation='utf8mb4_unicode_ci'))
     company = Column(String(255))
