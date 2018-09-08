@@ -5,7 +5,7 @@ from db.setup import Base
 
 
 class LiwcScores(Base):
-    __tablename__ = 'liwc_scores'
+    __tablename__ = 'liwc_2015_scores'
     __table_args__ = {
         'extend_existing': True,
         'mysql_row_format': 'DYNAMIC'
@@ -220,7 +220,7 @@ class LiwcScores(Base):
 
 
 class LiwcProjectMonth(Base):
-    __tablename__ = 'liwc_personality'
+    __tablename__ = 'liwc_2015_personality'
     __table_args__ = {
         'extend_existing': True,
         'mysql_row_format': 'DYNAMIC'
