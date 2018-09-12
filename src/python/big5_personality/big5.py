@@ -22,7 +22,7 @@ from db.setup import SessionWrapper
 from history_analyzer.orm import CommitHistoryDevProject
 from logger import logging_config
 from ml_downloader.orm.mlstats_tables import *
-from unmasking.unmask_aliases import OFFSET
+from unmasking.unmask_aliases import EMAILERS_OFFSET
 
 from rpy2.robjects.packages import importr
 import rpy2.robjects as robjects
@@ -86,7 +86,7 @@ def get_alias_email_addresses(alias_ids):
 
     for alias_id in alias_ids:
         if alias_id > 0:
-            if alias_id < OFFSET:
+            if alias_id < EMAILERS_OFFSET:
                 # from GithubDeveloper - local_developers
                 try:
                     res = session.query(GithubDeveloper.email).filter_by(id=alias_id).one()
@@ -229,7 +229,7 @@ def main():
     for uid in sorted(set(alias_map.values())):
         # negative ids for ASFers
         # positive for git developers
-        # positive, starts from OFFSET ids for emailers
+        # positive, starts from EMAILERS_OFFSET ids for emailers
         if resume_id is not None and uid < resume_id:
             logger.debug('%s already analyzed, skipping' % uid)
             continue

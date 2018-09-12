@@ -6,7 +6,7 @@ from db.setup import SessionWrapper
 from history_analyzer.orm import CommitHistoryDevProject
 from logger import logging_config
 from ml_downloader.orm.mlstats_tables import *
-from unmasking.unmask_aliases import OFFSET
+from unmasking.unmask_aliases import EMAILERS_OFFSET
 
 
 def main():
@@ -181,7 +181,7 @@ def was_committer_at_date(aid, timestamp, project_committers):
     aliases = get_alias_ids(alias_map, uid) + [uid, ]
     for alias in aliases:
         alias = abs(alias)
-        if alias > OFFSET:
+        if alias > EMAILERS_OFFSET:
             # mailing list id, ignore
             continue
         # elif alias in project_committers:

@@ -15,6 +15,7 @@ from db.setup import SessionWrapper
 from pr_downloader.activity_classifier import BasicFileTypeClassifier
 from logger import logging_config
 
+
 def parse_commits(slug, repos_folder):
     contributors = {}
     counter = itertools.count(start=1)

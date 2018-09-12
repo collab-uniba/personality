@@ -5,14 +5,17 @@ from collections import Counter
 from itertools import combinations, product
 
 import regex
+from unidecode import unidecode
 
 from apache_projects.orm.apache_tables import ApacheDeveloper
 from commit_analyzer.orm.commit_tables import GithubDeveloper
 from db.setup import SessionWrapper
+from github_users_location.orm import UsersLocation, UsersRegionId
 from logger import logging_config
 from ml_downloader.orm.mlstats_tables import *
 from pr_downloader.csvutils import CsvWriter
 from unmasking.alias import Alias
+from unmasking.geolite2 import geo
 
 d_alias_map = {}
 clusters = {}
@@ -55,39 +58,56 @@ def load_devs_from_asf_website():
     return users
 
 
-def threeway_merge(emailers, githubbers, asfers):
+def load_devs_from_github():
+    users = session.query(UsersRegionId).all()
+    return users
+
+
+def fourway_merge(emailers, local_gitters, asfers, githubbers):
     users = list()
     for e in emailers:
-        try:
-            u = dict()
-            u['id'] = e.id  # auto-generated, see setup_emailers_id()
-            u['login'] = e.username.lower().strip()
-            u['name'] = e.name.lower().strip()
-            u['email'] = e.email_address.lower().strip()
-            users.append(u)
-        except KeyError:
-            pass
+        u = dict()
+        u['id'] = e.id  # auto-generated, see setup_emailers_id()
+        u['login'] = e.username.lower().strip()
+        u['name'] = e.name.lower().strip()
+        u['email'] = e.email_address.lower().strip()
+        u['continent'] = ''
+        users.append(u)
 
-    for e in githubbers:
-        try:
-            u = dict()
-            u['id'] = e.id
-            u['login'] = ''
-            u['name'] = e.name.lower().strip()
-            u['email'] = e.email.lower().strip()
-            users.append(u)
-        except KeyError:
-            pass
+    for e in local_gitters:
+        u = dict()
+        u['id'] = e.id
+        u['login'] = ''
+        u['name'] = e.name.lower().strip()
+        u['email'] = e.email.lower().strip()
+        u['continent'] = ''
+        users.append(u)
 
     for e in asfers:
-        try:
-            u = dict()
-            u['id'] = -e.id
-            u['login'] = e.login.lower().strip()
+        u = dict()
+        u['id'] = -e.id
+        u['login'] = e.login.lower().strip()
+        u['name'] = e.name.lower().strip()
+        u['email'] = ''
+        u['continent'] = ''
+        users.append(u)
+
+    for e in githubbers:
+        u = dict()
+        u['id'] = -e.id - GITHUBBERS_OFFSET
+        u['login'] = e.username.lower().strip()
+        if e.name:
             u['name'] = e.name.lower().strip()
+        else:
+            u['name'] = ''
+        if e.email:
+            u['email'] = e.email.lower().strip()
+        else:
             u['email'] = ''
+        try:
+            u['continent'] = e.continent.lower().strip()
             users.append(u)
-        except KeyError:
+        except AttributeError:
             pass
     return users
 
@@ -154,19 +174,22 @@ def unmask(argv='./'):
     d_uid_type = {}
     # d_type_usr = {}
 
-    github_devs = load_devs_from_commits()
+    local_git_devs = load_devs_from_commits()
     email_senders = load_users_from_emails()
     asf_devs = load_devs_from_asf_website()
-    all_users = threeway_merge(email_senders, github_devs, asf_devs)
+    github_devs = load_devs_from_github()
+    all_users = fourway_merge(email_senders, local_git_devs, asf_devs, github_devs)
 
-    for user in all_users:  # github_devs:
+    for user in all_users:  # local_git_devs:
         # negative ids for ASFers
-        # positive for git developers
-        # positive, starts from OFFSET ids for emailers
-        uid = user['id']  # user.id
-        login = user['login']  # ''
-        name = user['name']  # user.name
-        email = user['email']  # user.email
+        # positive ids for local git developers
+        # positive ids, starts from EMAILERS_OFFSET for emailers
+        # negative ids, starts from -GITHUBBERS_OFFSET for developers retrieved from GitHub
+        uid = user['id']
+        login = user['login']
+        name = user['name']
+        email = user['email']
+        continent = user['continent']
 
         if name is "github" and email is "noreply@github.com":
             continue
@@ -180,7 +203,7 @@ def unmask(argv='./'):
             record_type = USR_REAL
 
         # a = Alias(record_type, uid, login, name, email, location, user_type)
-        a = Alias(uid, login, name, email, record_type)
+        a = Alias(uid, login, name, email, record_type, continent)
         aliases[uid] = a
 
         # - email
@@ -458,14 +481,33 @@ def setup_emailers_id(offset):
     session.commit()
 
 
-OFFSET = 900000
+def setup_githubbers_id_location(offset):
+    deleted = session.query(UsersRegionId).delete()
+    logger.info('%s rows deleted from table %s' % (deleted, UsersRegionId.__tablename__))
+    session.commit()
+
+    githubbers = session.query(UsersLocation.id, UsersLocation.location, UsersLocation.name, UsersLocation.email,
+                               UsersLocation.username).filter(UsersLocation.location.isnot(None)).all()
+    id = -offset
+    for g in githubbers:
+        id -= 1
+        continent = geo.extract_continent(unidecode(g.location.lower()))
+        row = UsersRegionId(id=id, continent=continent, username=g.username, email=g.email, name=g.name)
+        session.add(row)
+    session.commit()
+
+
+EMAILERS_OFFSET = 900000
+GITHUBBERS_OFFSET = 1000000
 if __name__ == '__main__':
     logger = logging_config.get_logger('unmask_aliases')
 
     SessionWrapper.load_config('../db/cfg/setup.yml')
     session = SessionWrapper.new(init=True)
-    setup_emailers_id(OFFSET)
+    setup_emailers_id(EMAILERS_OFFSET)
+    setup_githubbers_id_location(GITHUBBERS_OFFSET)
 
     aliases, everyone = unmask(sys.argv[1:])
+    logger.info('Done, looking for unmatched users')
     unmatched = find_missing_aliases(aliases, everyone)
-    logger.info('Unmatched %s' % len(unmatched))
+    logger.info('Done: unmatched %s' % len(unmatched))

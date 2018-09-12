@@ -11,13 +11,18 @@ class Alias:
                  name=None,
                  email=None,
                  record_type=None,
+                 continent=None
                  ):
 
         self.uid = uid
         self.login = login.strip()
         self.name = name.strip()
         self.record_type = record_type
+        self.continent = continent
+        self.email, self.email_prefix, self.email_domain = self.parse_email(email)
 
+    @staticmethod
+    def parse_email(email):
         email = email.strip().lower()
         if email == 'none' or not len(email):
             email = None
@@ -42,8 +47,6 @@ class Alias:
                     email.endswith('@email.com'):
                 email = None
 
-        self.email = email
-
         prefix = None
         domain = None
         if email is not None:
@@ -55,5 +58,5 @@ class Alias:
                 domain = email_parts[-1]
                 if not len(domain):
                     domain = None
-        self.email_prefix = prefix
-        self.email_domain = domain
+
+        return email, prefix, domain
