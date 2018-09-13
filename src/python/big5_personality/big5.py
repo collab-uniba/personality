@@ -19,10 +19,11 @@ from big5_personality.personality_insights.p_insights_big5 import get_profile_in
 from commit_analyzer.orm.commit_tables import *
 from commons.aliasing import load_alias_map, get_alias_ids
 from db.setup import SessionWrapper
+from github_users_location.orm import UsersRegionId
 from history_analyzer.orm import CommitHistoryDevProject
 from logger import logging_config
 from ml_downloader.orm.mlstats_tables import *
-from unmasking.unmask_aliases import EMAILERS_OFFSET
+from unmasking.unmask_aliases import EMAILERS_OFFSET, GITHUBBERS_OFFSET
 
 from rpy2.robjects.packages import importr
 import rpy2.robjects as robjects
@@ -85,7 +86,14 @@ def get_alias_email_addresses(alias_ids):
     alias_email_addresses = set()
 
     for alias_id in alias_ids:
-        if alias_id > 0:
+        if alias_id < GITHUBBERS_OFFSET:
+            # from UsersRegionId
+            try:
+                res = session.query(UsersRegionId.email).filter_by(id=alias_id).one()
+                alias_email_addresses.add(res.email)
+            except (orm.exc.NoResultFound, orm.exc.MultipleResultsFound):
+                continue
+        elif alias_id > 0:
             if alias_id < EMAILERS_OFFSET:
                 # from GithubDeveloper - local_developers
                 try:
@@ -147,7 +155,7 @@ def get_score_by_month(uid, p_name, usr_emails, resume_month, nlon, nlon_model):
             except Exception as e:
                 logger.error('Unknown error storing personality scores for %s\n\n' % v, e)
                 continue
-        elif tool == 'liwc':
+        elif tool == 'liwc15':
             logger.info('Getting liwc scores for month %s' % month)
             liwc_errors = get_scores(logger, session, uid, p_name, month, '\n\n'.join(clean_emails), len(clean_emails))
             del clean_emails
@@ -159,7 +167,7 @@ def get_score_by_month(uid, p_name, usr_emails, resume_month, nlon, nlon_model):
 def reset_personality_table():
     if tool == 'p_insights':
         session.query(PersonalityProjectMonth).delete()
-    elif tool == 'liwc':
+    elif tool == 'liwc15':
         session.query(LiwcScores).delete()
         session.query(LiwcProjectMonth).delete()
     session.commit()
@@ -172,7 +180,7 @@ def already_parsed_uid_project_month(ids, p_name):
         res = session.query(func.max(PersonalityProjectMonth.month)).filter(
             and_(or_(PersonalityProjectMonth.dev_uid == _id for _id in ids),
                  PersonalityProjectMonth.project_name == p_name)).all()
-    elif tool == 'liwc':
+    elif tool == 'liwc15':
         res = session.query(func.max(LiwcScores.month)).filter(
             and_(or_(LiwcScores.dev_uid == _id for _id in ids),
                  LiwcScores.project_name == p_name)).all()
@@ -188,7 +196,7 @@ def already_parsed_uid_project(ids):
         res = session.query(PersonalityProjectMonth.project_name).filter(
             or_(PersonalityProjectMonth.dev_uid == _id for _id in ids)).order_by(
                 PersonalityProjectMonth.project_name.desc()).distinct().all()
-    elif tool == 'liwc':
+    elif tool == 'liwc15':
         res = session.query(LiwcScores.project_name).filter(
             or_(LiwcScores.dev_uid == _id for _id in ids)).order_by(
                 LiwcScores.project_name.desc()).distinct().all()
@@ -203,7 +211,7 @@ def already_parsed_uid():
     res = None
     if tool == 'p_insights':
         res = session.query(func.max(PersonalityProjectMonth.dev_uid)).all()
-    elif tool == 'liwc':
+    elif tool == 'liwc15':
         res = session.query(func.max(LiwcScores.dev_uid)).all()
     uid = None
     if res:
@@ -228,6 +236,7 @@ def main():
     resume_id = already_parsed_uid()
     for uid in sorted(set(alias_map.values())):
         # negative ids for ASFers
+        # negative ids, starts from GITHUBBERS_OFFSET for PR authors+location from GitHub
         # positive for git developers
         # positive, starts from EMAILERS_OFFSET ids for emailers
         if resume_id is not None and uid < resume_id:
@@ -277,7 +286,7 @@ if __name__ == '__main__':
     if len(sys.argv) >= 2:
         tool = sys.argv[1]
     else:
-        logger.error('Missing mandatory first param for tool: \'liwc\' or \'p_insights\' expected')
+        logger.error('Missing mandatory first param for tool: \'liwc15\' or \'p_insights\' expected')
         sys.exit(-1)
 
     if len(sys.argv) > 2 and sys.argv[2] == 'reset':
@@ -285,7 +294,7 @@ if __name__ == '__main__':
     try:
         """ boolean var storing presence of liwc errors """
         liwc_errors = main()
-        if tool == 'liwc':
+        if tool == 'liwc15':
             if not liwc_errors:
                 get_profile_liwc(session, logger)
                 logger.info('Done getting personality scores')

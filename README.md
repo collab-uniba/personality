@@ -140,7 +140,7 @@ From directory `src/python/big5_personality` run:
 $ sh run.sh <tool> [reset]
 ```
 where:
-- tool: tool name, either `liwc` or `p_insights`
+- tool: tool name, either `liwc15` or `p_insights`
 - reset: to empty the db tables containing personality data before new computing
 
 ## 10. Export results
@@ -152,6 +152,6 @@ From directory `src/python/export_results` run:
 $ sh run.sh <tool>
 ```
 where:
-- tool: tool name, either `liwc` or `p_insights`
+- tool: tool name, with values in {`liwc07`, `liwc15`, `p_insights`}
 
 Results are stored in files `personality_liwc.csv` and `personality_p_insights.csv`.
