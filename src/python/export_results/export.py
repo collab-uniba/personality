@@ -129,10 +129,10 @@ def save_personality_results():
                                                         LiwcProjectMonth.month,
                                                         LiwcProjectMonth.word_count).all()
     elif tool == 'liwc07':
-        rows = session.query(Liwc2007ProjectMonth).order_by(LiwcProjectMonth.dev_uid,
-                                                            LiwcProjectMonth.project_name,
-                                                            LiwcProjectMonth.month,
-                                                            LiwcProjectMonth.word_count).all()
+        rows = session.query(Liwc2007ProjectMonth).order_by(Liwc2007ProjectMonth.dev_uid,
+                                                            Liwc2007ProjectMonth.project_name,
+                                                            Liwc2007ProjectMonth.month,
+                                                            Liwc2007ProjectMonth.word_count).all()
 
     if rows:
         for r in rows:
