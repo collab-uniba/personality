@@ -1,21 +1,23 @@
 import json
 import logging
 import sys
+
 from dateutil.relativedelta import relativedelta
 
 from apache_projects.orm import ApacheProject
+from big5_personality.liwc.orm.liwc_tables import LiwcProjectMonth, Liwc2007ProjectMonth
+from big5_personality.personality_insights.orm import PersonalityProjectMonth
 from commit_analyzer.orm import GithubRepository
 from commons.aliasing import load_alias_map
 from commons.csv_utils import CsvWriter
 from db import SessionWrapper
+from github_users_location.orm import UsersRegionId
 from history_analyzer.orm import CommitHistoryDevProject
 from logger import logging_config
-from big5_personality.personality_insights.orm import PersonalityProjectMonth
-from big5_personality.liwc.orm.liwc_tables import LiwcProjectMonth
 
 
 def merge_result_by_alias(res):
-    # uids are already unaliased
+    # uids are already unmasked (i.e., aliases turned into uid)
     uids_prjs = set(sorted((_r['uid'], _r['project']) for _r in res))
     new_dicts = list()
     for uid, prj in uids_prjs:
@@ -109,7 +111,8 @@ def save_personality_results():
 
     logger.info('Exporting personality data to file %s' % personality_filename)
     personality_header = ['uid', 'project', 'month', 'email_count', 'word_count',
-                          'openness', 'agreeableness', 'neuroticism', 'extraversion', 'conscientiousness']
+                          'openness', 'agreeableness', 'neuroticism', 'extraversion', 'conscientiousness',
+                          'continent']
     if tool == 'p_insights':
         personality_header.extend(['openness_percentile', 'agreeableness_percentile', 'neuroticism_percentile',
                                    'extraversion_percentile', 'conscientiousness_percentile'])
@@ -120,16 +123,30 @@ def save_personality_results():
                                                                PersonalityProjectMonth.project_name,
                                                                PersonalityProjectMonth.month,
                                                                PersonalityProjectMonth.word_count).all()
-    elif tool == 'liwc':
+    elif tool == 'liwc15':
         rows = session.query(LiwcProjectMonth).order_by(LiwcProjectMonth.dev_uid,
                                                         LiwcProjectMonth.project_name,
                                                         LiwcProjectMonth.month,
                                                         LiwcProjectMonth.word_count).all()
+    elif tool == 'liwc07':
+        rows = session.query(Liwc2007ProjectMonth).order_by(LiwcProjectMonth.dev_uid,
+                                                            LiwcProjectMonth.project_name,
+                                                            LiwcProjectMonth.month,
+                                                            LiwcProjectMonth.word_count).all()
 
     if rows:
         for r in rows:
             r_dict = dict()
             r_dict['uid'] = r.dev_uid
+            """ 
+            use uid to retrieve the associated continent;
+            uids in uids_continent are already unmasked
+            
+            """
+            try:
+                r_dict['continent'] = uids_continent[r.dev_uid]
+            except KeyError:
+                r_dict['continent'] = ''
             r_dict['project'] = r.project_name
             r_dict['month'] = r.month
             r_dict['email_count'] = r.email_count
@@ -178,7 +195,8 @@ def save_commit_results():
                      'first_integrated_datetime', 'last_integrated_datetime',
                      'tot_num_additions_integrated', 'tot_num_deletions_integrated',
                      'tot_num_files_changed_integrated', 'tot_src_loc_added_integrated',
-                     'tot_src_loc_deleted_integrated', 'tot_src_files_touched_integrated']
+                     'tot_src_loc_deleted_integrated', 'tot_src_files_touched_integrated',
+                     'continent']
     commit_writer = CsvWriter(commit_filename, commit_header, 'w')
     rows = session.query(CommitHistoryDevProject).order_by(CommitHistoryDevProject.dev_uid,
                                                            CommitHistoryDevProject.project_name,
@@ -191,6 +209,15 @@ def save_commit_results():
                 continue
             r_dict = dict()
             r_dict['uid'] = alias_map[r.dev_uid]
+            """ 
+            use uid to retrieve the associated continent;
+            uids in uids_continent are already unmasked
+
+            """
+            try:
+                r_dict['continent'] = uids_continent[r.dev_uid]
+            except KeyError:
+                r_dict['continent'] = ''
             r_dict['project'] = r.project_name
             res = session.query(ApacheProject.language, ApacheProject.status, ApacheProject.category).filter_by(
                 name=r.project_name).one()
@@ -234,16 +261,35 @@ def save_commit_results():
     logger.info('Done')
 
 
+def load_continent_info():
+    """
+    Retrieve the list of developers for which a continent can be inferred
+    from location; then, their ids are also unmasked and turned into a
+    dictionary.
+    :return: dictionary of unmasked dev ids (key) and continent (value)
+    """
+    res = session.query(UsersRegionId.id, UsersRegionId.continent).all()
+    uids_cont = dict()
+    for _r in res:
+        try:
+            unmasked_id = alias_map[_r.id]
+            uids_cont.update({unmasked_id: _r.continent})
+        except KeyError:
+            pass
+    return uids_cont
+
+
 if __name__ == '__main__':
     logger = logging_config.get_logger('export', console_level=logging.DEBUG)
     SessionWrapper.load_config('../db/cfg/setup.yml')
     session = SessionWrapper.new(init=True)
     alias_map = load_alias_map('../unmasking/idm/dict/alias_map.dict')
+    uids_continent = load_continent_info()
 
     if len(sys.argv) >= 2:
         tool = sys.argv[1]
     elif len(sys.argv) < 2:
-        logger.error('Missing mandatory first param for tool: \'liwc\' or \'p_insights\' expected')
+        logger.error('Missing mandatory first param for tool: \'liwc07\', \'liwc15\', or \'p_insights\' expected')
         sys.exit(-1)
 
     save_personality_results()
