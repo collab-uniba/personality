@@ -89,7 +89,7 @@ def get_alias_email_addresses(alias_ids):
         if alias_id < GITHUBBERS_OFFSET:
             # from UsersRegionId
             try:
-                res = session.query(UsersRegionId.email).filter_by(id=alias_id).one()
+                res = session.query(UsersRegionId.email).filter_by(id=alias_id).filter(UsersRegionId.email.isnot(None)).one()
                 alias_email_addresses.add(res.email)
             except (orm.exc.NoResultFound, orm.exc.MultipleResultsFound):
                 continue
