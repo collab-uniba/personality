@@ -309,14 +309,13 @@ class Liwc2007Scores(Base):
     humans = Column(Float)
     incl = Column(Float)
     excl = Column(Float)
-    
 
     def __init__(self, dev_uid, project_name, month, email_count, wc, sixltr, wps, dic,
                  family, feel, money, insight, number, parenth, otherp, negate, negemo,
-                 death, adverb, ipron, percept, quant, exclam, preps, achieve, bio, 
+                 death, adverb, ipron, percept, quant, exclam, preps, achieve, bio,
                  leisure, quote, verb, hear, they, affect, you, work, period, friend,
                  auxverb, shehe, semic, relig, pronoun, qmark, certain, assent, we,
-                sad, see, anger, home, conj, sexual, ppron, motion, space, filler, anx,
+                 sad, see, anger, home, conj, sexual, ppron, motion, space, filler, anx,
                  health, discrep, relativ, colon, cause, body, tentat, social, article,
                  allpunc, apostro, i, posemo, ingest, dash, swear, comma, time, cogmech,
                  funct, future, present, past, nonfl, humans, incl, excl):
@@ -403,7 +402,7 @@ class Liwc2007Scores(Base):
         self.humans = humans
         self.incl = incl
         self.excl = excl
-        
+
 
 class LiwcProjectMonth(Base):
     __tablename__ = 'liwc_2015_personality'
@@ -437,6 +436,7 @@ class LiwcProjectMonth(Base):
         return 'developer id {0} scores for project {1}, during month {2}'.format(self.dev_uid,
                                                                                   self.project_name,
                                                                                   self.month)
+
 
 class Liwc2007ProjectMonth(Base):
     __tablename__ = 'liwc_2007_personality'
