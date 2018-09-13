@@ -94,7 +94,7 @@ def fourway_merge(emailers, local_gitters, asfers, githubbers):
 
     for e in githubbers:
         u = dict()
-        u['id'] = -e.id - GITHUBBERS_OFFSET
+        u['id'] = e.id # auto-generated, see setup_githubbers_id()
         u['login'] = e.username.lower().strip()
         if e.name:
             u['name'] = e.name.lower().strip()
@@ -104,11 +104,8 @@ def fourway_merge(emailers, local_gitters, asfers, githubbers):
             u['email'] = e.email.lower().strip()
         else:
             u['email'] = ''
-        try:
-            u['continent'] = e.continent.lower().strip()
-            users.append(u)
-        except AttributeError:
-            pass
+        u['continent'] = e.continent.lower().strip()
+        users.append(u)
     return users
 
 
@@ -491,9 +488,10 @@ def setup_githubbers_id_location(offset):
     id = -offset
     for g in githubbers:
         id -= 1
-        continent = geo.extract_continent(unidecode(g.location.lower()))
-        row = UsersRegionId(id=id, continent=continent, username=g.username, email=g.email, name=g.name)
-        session.add(row)
+        continent = geo.extract_continent(unidecode(g.location))
+        if continent:
+            row = UsersRegionId(id=id, continent=continent, username=g.username, email=g.email, name=g.name)
+            session.add(row)
     session.commit()
 
 

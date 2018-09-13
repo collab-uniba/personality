@@ -1,6 +1,7 @@
 import nltk
+
 from logger import logging_config
-from . import cities_contries_continents, cities, countries, continents, SelectedFields
+from unmasking.geolite2 import cities_contries_continents, cities, countries, continents, SelectedFields
 
 logger = logging_config.get_logger('geo')
 
@@ -36,7 +37,7 @@ def extract_continent(location):
                 if x[SelectedFields.city] == city:
                     continent = x[SelectedFields.continent]
     if not continents:
-        logger.warning('Failed to extract contient from %s' % location)
+        logger.warning('Failed to extract continent from %s' % location)
     return continent
 
 
@@ -58,3 +59,19 @@ def named_entities(text):
     pos_tag = nltk.pos_tag(words)
     nes = nltk.ne_chunk(pos_tag)
     return nes
+
+
+if __name__ == '__main__':
+    from db import SessionWrapper
+    from github_users_location.orm import UsersLocation
+    import unidecode
+
+    SessionWrapper.load_config('../db/cfg/setup.yml')
+    session = SessionWrapper.new(init=False)
+
+    locations = session.query(UsersLocation.location).filter(UsersLocation.location.isnot(None)).distinct(
+        UsersLocation.location).order_by(UsersLocation.location.asc()).all()
+    for l in [value for value, in locations]:
+        loc = extract_continent(unidecode.unidecode(l))
+        if loc is None:
+            print('{0}:\t{1}'.format(l, loc))
