@@ -167,7 +167,7 @@ def save_personality_results():
                 r_dict['neuroticism_percentile'] = scores["personality"][4]['percentile']
                 r_dict['extraversion_percentile'] = scores["personality"][2]['percentile']
                 r_dict['conscientiousness_percentile'] = scores["personality"][1]['percentile']
-            elif tool == 'liwc':
+            elif 'liwc' in tool:
                 r_dict['openness'] = scores['openness']
                 r_dict['agreeableness'] = scores['agreeableness']
                 r_dict['neuroticism'] = scores['neuroticism']
