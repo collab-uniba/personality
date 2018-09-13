@@ -94,7 +94,8 @@ From directory `src/python/pr_downloader` run:
 ```bash
 $ sh run.sh
 ```
--->## 7. Get developers' location from GitHub
+-->
+## 6. Get developers' location from GitHub
 * *Setup*:
     1. In MySql command line enter following instruction:
         ```bash
@@ -111,7 +112,7 @@ $ sh run.sh [reset]
 where:
 - reset: to empty db table containing github users location
 
-## 6. Unmask aliases (identify unique developer IDs)
+## 7. Unmask aliases (identify unique developer IDs)
 * *Setup*:
     1. Use Python 3 environment as described in Step 2.
     2. At first run, execute from dicrectory `src/python/unmasking`:
