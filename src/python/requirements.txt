@@ -45,5 +45,4 @@ urllib3==1.22
 w3lib==1.18.0
 watson-developer-cloud==1.0.2
 zope.interface==4.4.3
-unidecode
 nltk
