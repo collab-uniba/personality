@@ -97,7 +97,11 @@ $ sh run.sh
 -->
 ## 6. Unmask aliases (identify unique developer IDs)
 * *Setup*:
-Use Python 3 environment as described in Step 2.
+    1. Use Python 3 environment as described in Step 2.
+    2. At first run, execute from dicrectory `src/python/unmasking`:
+        ```bash
+        $ python nltk_download.py
+        ```
 * *Execution*:
 From directory `src/python/unmasking` run:
 ```bash
