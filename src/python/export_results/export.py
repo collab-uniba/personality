@@ -162,7 +162,7 @@ def save_personality_results():
                 r_dict['neuroticism'] = scores["personality"][4]['raw_score']
                 r_dict['extraversion'] = scores["personality"][2]['raw_score']
                 r_dict['conscientiousness'] = scores["personality"][1]['raw_score']
-                r_dict['opennes_percentile'] = scores["personality"][0]['percentile']
+                r_dict['openness_percentile'] = scores["personality"][0]['percentile']
                 r_dict['agreeableness_percentile'] = scores["personality"][3]['percentile']
                 r_dict['neuroticism_percentile'] = scores["personality"][4]['percentile']
                 r_dict['extraversion_percentile'] = scores["personality"][2]['percentile']
