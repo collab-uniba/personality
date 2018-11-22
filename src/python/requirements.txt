@@ -32,7 +32,7 @@ pytz==2017.3
 PyYAML==3.12
 queuelib==1.4.2
 regex==2017.12.12
-requests==2.18.4
+requests==2.20.0
 rpy2==2.9.4
 Scrapy==1.4.0
 selenium==3.8.0
