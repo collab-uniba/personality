@@ -9,7 +9,7 @@ Distributed Projects: The Case of the Apache Ecosystem.” In Proc. Int’l Conf
 
 ## 0. Dataset
 The final results of the scripts (i.e., developers' monthly scores per project) are stored [here](https://raw.githubusercontent.com/collab-uniba/personality/master/src/python/export_results/personality.csv) (CSV format). 
-Instead, the entire MySQL database, containing the data scraped from the Apache website, the email archives, and the code metadata obtained from GitHub, is stored [here](https://mega.nz/#!IQ91SAZJ!HXIdsZTT9qay3a-BbFAIJUzaPaktWaSr1pCF-ZwH_tY).
+Instead, the entire MySQL database, containing the data scraped from the Apache website, the email archives, and the code metadata obtained from GitHub, is stored [here](https://mega.nz/#F!cJ0BiSrI!DYWcN7CbcHdSfqpuzSSmuw).
 
 The dump can be imported into a pre-existing db named `apache` as follows:
 
