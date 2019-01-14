@@ -43,7 +43,7 @@ SQLAlchemy==1.1.15
 SQLAlchemy-Utils==0.32.21
 Twisted==17.9.0
 Unidecode==0.4.21
-urllib3==1.22
+urllib3==1.23
 w3lib==1.18.0
 watson-developer-cloud==1.0.2
 zope.interface==4.4.3
