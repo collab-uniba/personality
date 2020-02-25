@@ -1,4 +1,4 @@
-# Apache developers' Big-Five personality profiler
+# Apache developers' Big-Five personality profiler [![DOI](https://zenodo.org/badge/114795784.svg)](https://zenodo.org/badge/latestdoi/114795784)
 
 Content and scripts from this repository can be freely reused for academic purposes, provided that you cite the following paper in your work:
 ```
