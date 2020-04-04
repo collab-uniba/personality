@@ -13,7 +13,7 @@ GitPython==2.1.8
 hyperlink==17.3.1
 idna==2.6
 incremental==17.5.0
-lxml==4.1.1
+lxml==4.2.5
 mysqlclient==1.3.12
 nltk
 numpy
@@ -29,7 +29,7 @@ pyOpenSSL==17.5.0
 pysolr==3.7.0
 python-dateutil==2.6.1
 pytz==2017.3
-PyYAML==3.13
+PyYAML==4.2b1
 queuelib==1.4.2
 regex==2017.12.12
 requests==2.20.0
@@ -43,7 +43,7 @@ SQLAlchemy>=1.3.0
 SQLAlchemy-Utils==0.32.21
 Twisted==17.9.0
 Unidecode==0.4.21
-urllib3==1.23
+urllib3==1.24.3
 w3lib==1.18.0
 watson-developer-cloud==1.0.2
 zope.interface==4.4.3
