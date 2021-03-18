@@ -2,7 +2,9 @@
 
 Content and scripts from this repository can be freely reused for academic purposes, provided that you cite the following paper in your work:
 ```
-F. Calefato, F. Lanubile, and B. Vasilescu (2019) “A large-scale, in-depth analysis of developers’ personalities in the Apache ecosystem.” Information and Software Technology, Vol. 114, Oct., pp. 1-20, DOI: 10.1016/j.infsof.2019.05.012.
+F. Calefato, F. Lanubile, and B. Vasilescu (2019) “A large-scale, in-depth analysis of developers’
+personalities in the Apache ecosystem.” Information and Software Technology, Vol. 114, Oct., 
+pp. 1-20, DOI: 10.1016/j.infsof.2019.05.012.
 ```
 
 ## 0. Dataset
