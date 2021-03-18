@@ -2,9 +2,7 @@
 
 Content and scripts from this repository can be freely reused for academic purposes, provided that you cite the following paper in your work:
 ```
-F. Calefato, G. Iaffaldano, F. Lanubile, B. Vasilescu (2018). “On Developers’ Personality in Large-scale
-Distributed Projects: The Case of the Apache Ecosystem.” In Proc. Int’l Conf. on Global Software Engineering 
-(ICGSE’18), Gothenburg, Sweden, May 28-29, 2018, DOI:10.1145/3196369.3196372 
+F. Calefato, F. Lanubile, and B. Vasilescu (2019) “A large-scale, in-depth analysis of developers’ personalities in the Apache ecosystem.” Information and Software Technology, Vol. 114, Oct., pp. 1-20, DOI: 10.1016/j.infsof.2019.05.012.
 ```
 
 ## 0. Dataset
