@@ -34,7 +34,7 @@ queuelib==1.4.2
 regex==2017.12.12
 requests==2.20.0
 rpy2==2.9.4
-Scrapy==1.4.0
+Scrapy==1.8.1
 selenium==3.8.0
 service-identity==17.0.0
 six==1.11.0
