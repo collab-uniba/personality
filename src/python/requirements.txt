@@ -24,7 +24,7 @@ pycparser==2.18
 PyDispatcher==2.0.5
 pygit2==0.26.2
 PyGithub==1.35
-PyJWT==1.5.3
+PyJWT==2.4.0
 pyOpenSSL==17.5.0
 pysolr==3.7.0
 python-dateutil==2.6.1
