@@ -35,7 +35,7 @@ regex==2017.12.12
 requests==2.31.0
 rpy2==2.9.4
 Scrapy==2.6.2
-selenium==3.8.0
+selenium==4.15.1
 service-identity==17.0.0
 six==1.11.0
 smmap2==2.0.3
