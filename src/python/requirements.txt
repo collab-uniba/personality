@@ -47,3 +47,4 @@ urllib3==1.26.19
 w3lib==1.18.0
 watson-developer-cloud==1.0.2
 zope.interface==4.4.3
+setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
